@@ -1,5 +1,3 @@
-import processXML as fp
-from cltk import NLP
 import time as t
 import glob
 import re
