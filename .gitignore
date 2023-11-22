@@ -5,6 +5,7 @@ try*.py
 old*.py
 *.txt
 *.csv
+.DS_store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
