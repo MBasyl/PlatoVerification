@@ -23,20 +23,28 @@ from https://github.com/PerseusDL/canonical-greekLit and https://github.com/Open
   - Xenocrates of Chalcedon (tlg: 0634)
   - Speusippus fragmenta (tlg: 1692)
 
-## Preprocessing (processAll.py)
+## Preprocessing (main.py)
 
-- Extracting data from TEI to text
-- create NER list to inspect manually
-- create corpus stats -> delete texts with less than 2k words
-- create lemmatized and POS-tag dataset
-- clean text from diacritics(?)
-- sub NER with "x" to avoid topical bias
+1. Extract data from TEI to text (processXML.py)
+2. create NER list (NERtokens.py) to inspect manually
+3. Use getTXTstatistics.py to obtain general overview of the corpus
+
+- remove texts with less than 2.000 words
+- remove 1200 words from Xenophon;9800 from Aristoteles, carefully reduce Plato to 300.000 by balancing early-mid-late-laws works.
+
+4. create POS-tagged dataset (processPOS.py)
+5. clean text from extra spaces and punctuation
+
+- NB: capitalize after periods and keep diacritics
+
+6. substitute NER with "\*" to reduce topical bias
+7. Setup directories for ML
 
 # Experimental Set-up
 
 ## Unsupervised
 
-- Clustering
+- Clustering performed on full author profiles and on single documents
 - PCA?
 
 ## Supervised
@@ -45,7 +53,8 @@ Test-run: On polygraphous Xenophon (tlg: 0032): 14 texts
 
 - classifiers
   - SVM
-  - GI
+  - GI-instance
+  - GI-profile
   - Masking
   - Diff-Vec
 - Neural Networks

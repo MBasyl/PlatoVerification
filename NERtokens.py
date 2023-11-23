@@ -1,8 +1,6 @@
 from cltk.tag import ner
 import time as t
 import glob
-from collections import Counter
-import csv
 
 
 def create_ner(text):
@@ -18,18 +16,9 @@ def write_ALLner(flat_list, folder):
     # sort alphabetically
     word_count_ordered = sorted(set(flat_list))
 
-    # with open(f'NER_tokens{folder}.txt', 'w', newline='') as file:
-    #    for el in word_count_ordered:
-    #        file.write(el + '\n')
-
-    word_count = Counter(flat_list)
-
-    with open('ListNER_count.csv', 'w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=['Entity', 'Count'])
-        writer.writeheader()  # Write the header row
-        # Write the unique words and their counts to the CSV file
-        for word, count in word_count.items():
-            writer.writerow({'Entity': word, 'Count': count})
+    with open(f'NER_tokens{folder}.txt', 'w', newline='') as file:
+        for el in word_count_ordered:
+            file.write(el + '\n')
 
     return
 
@@ -38,7 +27,7 @@ def NER_list(folder):
 
     print('making list of NER...')
     start_time = t.time()
-    ListNER = ['ωκρατης', 'ωκρατες']
+    ListNER = []
     for file in glob.glob(folder + '/*.txt'):
         f = open(file, 'r').read()
         ListNER.append(create_ner(f))

@@ -2,7 +2,7 @@
 import pandas as pd
 import glob
 import os
-import matplotlib.pyplot as plt
+import numpy as np
 
 
 def combine_files_by_author(input_folder, output_folder):
@@ -44,13 +44,14 @@ def word_count(file):
         text = f.read()
         words = text.split()
         word_count = len(words)
-        characters = len(text)
+        chunk_size = 1000
         # make dictionary
         stats_dictionary = {"Text_id": title,
-                            "Word count": word_count, "Character count": characters}
+                            "Word count": word_count}
         f.close()
-    # divide each word_count by 500
-    # stats_dictionary["Number of chunks"] = stats_dictionary["Word count"] / chunk_size
+    # divide each word_count by 1000 and round down the decimals
+    stats_dictionary["Number of chunks"] = np.floor(
+        stats_dictionary["Word count"] / chunk_size)
 
     return stats_dictionary
 
@@ -85,8 +86,4 @@ def main(folder):
 
 if __name__ == "__main__":
 
-    df = main('profiles')
-
-    # 67 rows
-    # mean of Words: 13.748
-    # Chunks: mean 27 ; std 41  ; median 11
+    df = main('Rcorpus')

@@ -42,8 +42,8 @@ def processLetters(data):
                     output_file.write(f"{final_content}")
                     output_file.close()
 
-                print(
-                    f"Letter {letter_num} processed. Output written to {output_file_path}")
+                # print(
+                #    f"Letter {letter_num} processed. Output written to {output_file_path}")
 
     return
 
@@ -71,7 +71,7 @@ def parse_tei(data):
         final_content = clean(content)
 
         # write txt file with title, author, and content
-        with open(f"processedCorpus/{new_title}.txt", "w") as f:
+        with open(f"rawCorpus/{new_title}.txt", "w") as f:
             f.write(f"{final_content}")
             f.close()
     return [author, title]

@@ -1,14 +1,14 @@
 #! source venv/bin/activate
 
+import glob
 import process4R as R
 import processXML as process
-# import named_entitiesLEMMATA as ne
 import NERtokens as ne
-import oldNER4lemma as nl
 import getTXTstatistics
+import parse_dir
 import convert2csv
 import cleanCSV as clean
-import glob
+import oldNER4lemma as nl
 
 
 def preprocessing(folder):
@@ -31,26 +31,22 @@ def preprocessing(folder):
 def styloProcess(folder):
     print("___ will take around 1h....")
     # create ref list of NER from plain text
-    # ne.NER_list(folder)
+    ne.NER_list(folder)
     # clean text and save in Rcorpus/text
     R.clean_corpus(folder)
     # metadata from fully processed txt files, confront with X,y for models
-    # getTXTstatistics.combine_files_by_author('Rcorpus', 'profiles')
+    getTXTstatistics.combine_files_by_author('Rcorpus', 'profiles')
     print("\ncontinue processing in R...")
     return
 
 
 def pythonProcess(folder):
-    # create single CSV with author, title, chunked-text,
-    # lemmata, pos, binary and categorical LABELS
-    convert2csv.main(folder)
-    print("Output is complete_dataset.csv")
-    # create ref list of NER from lemma text
-    nl.NER_list(folder)
-    # clean lemmata/plain text before processing
-    clean.main('labelDataset.csv', 'lemmata')  # or 'text'
-    print("Output is labelDataset_cleaned.csv")
 
+    parse_dir.main(folder)
+    # create single CSV with author, title, chunked-text,
+    # lemmata, pos, binary and categorical LABELS: convert2csv.main(folder)
+
+    # clean lemmata/plain text before processing: clean.main('labelDataset.csv', 'lemmata')  # or 'text'
     return
 
 
@@ -69,4 +65,5 @@ if __name__ == '__main__':
     fileCounter = len(glob.glob1("RCorpus/", "*.txt"))
     print("Number of txt files in folder RCorpus: ", fileCounter)
 
-    # pythonProcess(folder)
+    folder = "RCorpus"
+    pythonProcess(folder)
