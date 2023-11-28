@@ -1,14 +1,13 @@
 #! source venv/bin/activate
 
 import glob
-import process4R as R
-import processXML as process
-import NERtokens as ne
-import getTXTstatistics
+import processingScripts.process4R as R
+import processingScripts.processXML as process
+import processingScripts.NERtokens as ne
+import processingScripts.getTXTstatistics as statistics
 import parse_dir
 import convert2csv
-import cleanCSV as clean
-import oldNER4lemma as nl
+import processingScripts.cleanCSV as clean
 
 
 def preprocessing(folder):
@@ -17,9 +16,9 @@ def preprocessing(folder):
     authorList = process.process_files(folder)
     process.processLetters("rawCorpus/tlg0059.tlg036.perseus-grc2.xml")
     # get general overview of data
-    getTXTstatistics.main(folder)
-    getTXTstatistics.combine_files_by_author(folder, 'profiles')
-    getTXTstatistics.main('profiles')
+    statistics.main(folder)
+    statistics.combine_files_by_author(folder, 'profiles')
+    statistics.main('profiles')
 
     with open('authorList.txt', 'w') as f:
         for item in authorList:
@@ -35,7 +34,7 @@ def styloProcess(folder):
     # clean text and save in Rcorpus/text
     R.clean_corpus(folder)
     # metadata from fully processed txt files, confront with X,y for models
-    getTXTstatistics.combine_files_by_author('Rcorpus', 'profiles')
+    statistics.combine_files_by_author('Rcorpus', 'profiles')
     print("\ncontinue processing in R...")
     return
 
