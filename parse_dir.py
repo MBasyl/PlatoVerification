@@ -46,12 +46,12 @@ def distribute_and_chunk(input_directory, output_directory, chunk_size=1000):
 
             # Log the number of words dropped
             words_dropped = len(content.split()) - (len(chunks) * chunk_size)
-            with open(os.path.join(output_directory, "words_dropped_log.txt"), "a", encoding="utf-8") as log_file:
-                log_file.write(
-                    f"{filename}_{i + 1}: {words_dropped} words dropped\n")
+            # with open(os.path.join(output_directory, "words_dropped_log.txt"), "a", encoding="utf-8") as log_file:
+            #    log_file.write(
+            #        f"{filename}_{i + 1}: {words_dropped} words dropped\n")
 
 
-def split_train_test(input_directory, output_directory='data/GIdir', test_size=0.2):
+def split_train_test(input_directory, output_directory='data/GIplain', test_size=0.2):
     # Create subdirectories for 'test' and 'train'
     os.makedirs(output_directory, exist_ok=True)
 
@@ -62,7 +62,7 @@ def split_train_test(input_directory, output_directory='data/GIdir', test_size=0
     authors = [author for author in os.listdir(
         input_directory) if os.path.isdir(os.path.join(input_directory, author))]
     test_authors = [auth for auth in authors if auth in [
-        'Pla', 'Disputed', 'Xen', 'Spe', 'Xec']]
+        'Pla', 'Disputed', 'PsPla']]
     train_authors = [auth for auth in authors if auth not in test_authors]
     # Split the authors into train and test
     # train_authors, test_authors = train_test_split(

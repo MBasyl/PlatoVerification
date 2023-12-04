@@ -36,11 +36,11 @@ def format_directory_to_json(directory_path):
 
 if __name__ == "__main__":
 
-    folder = "data/Rcorpus"
+    folder = "data/MorphoSynCorpus"
     formatted_data = format_directory_to_json(folder)
 
     # Save the formatted data as a JSON file
-    output_path = os.path.join("data", "MLcorpus", "SVM_data.json")
+    output_path = os.path.join("data", "MorphoSynCorpus", "ParsedPlato.json")
     with open(output_path, 'w', encoding='utf-8') as json_file:
         json.dump(formatted_data, json_file, indent=4)
 

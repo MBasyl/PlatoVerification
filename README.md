@@ -52,12 +52,11 @@ from https://github.com/PerseusDL/canonical-greekLit and https://github.com/Open
 Test-run: On polygraphous Xenophon (tlg: 0032): 14 texts
 
 - classifiers
-  - SVM
-  - GI-instance
+  - SVM using code adapted from https://github.com/avjves/AuthAttHelper/blob/master/wrapper.py#L73
+    #build PIPELINE FOR IT!!! C_CHOICE > CV > FIRST PLOT > MAIN > BEST_FEAT > LAST PLOT
+  - GI-instance using code adapted from ...
   - GI-profile
-  - Masking
-  - Diff-Vec
+  - Masking?
+  - Diff-Vec?
 - Neural Networks
-  - CNN
   - LSTM
-  - SBERT
