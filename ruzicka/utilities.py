@@ -18,8 +18,6 @@ from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from .vectorization import Vectorizer
 from .evaluation import pan_metrics
 
-logger = logging.getLogger("ruzicka")
-
 
 def load_pan_dataset(directory, ext="txt", encoding="utf8"):
     """
@@ -302,11 +300,9 @@ def make_up_lies(X, y):
 def benchmark_imposters(X, y, splitter, vectorizer, verifier, shifter):
     accs = []
     c_at_1s = []
-    logger.info(
-        f"Starting benchmark: {splitter.n_splits} splits, test size {splitter.test_size:.0%}"
-    )
+
     for i, (train_index, test_index) in enumerate(splitter.split(X, y)):
-        train_X = vectorizer.fit_transform(X[train_index], y[train_index])
+        train_X = vectorizer.fit_transform(X[train_index])  # y[train_index]
         verifier.fit(train_X, y[train_index])
         test_X_raw = vectorizer.transform(X[test_index])
         test_X, test_y, test_gt = make_up_lies(test_X_raw, y[test_index])
@@ -315,12 +311,13 @@ def benchmark_imposters(X, y, splitter, vectorizer, verifier, shifter):
         dev_acc_score, dev_auc_score, dev_c_at_1_score = pan_metrics(
             prediction_scores=test_scores, ground_truth_scores=test_gt
         )
-        logger.info(
+        print(
             f"Accuracy: {dev_acc_score:.2%} AUC: {dev_auc_score:.2%}"
             f" c@1: {dev_c_at_1_score:.2%} AUC x c@1: {dev_auc_score * dev_c_at_1_score:.2%}"
         )
         accs.append(dev_acc_score)
         c_at_1s.append(dev_c_at_1_score)
+    print(accs, c_at_1s)
     return (accs, c_at_1s)
 
 
@@ -332,15 +329,19 @@ def fit_shifter(
     shifter,
     test_size=0.2,
 ):
-    logger.info(f"Fitting the provided score shifter on a {test_size*100}% sample")
+
     splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size)
     for i, (train_index, test_index) in enumerate(splitter.split(X, y)):
-        train_X = vectorizer.fit_transform(X[train_index], y[train_index])
+        # print("X shape:", X.shape)
+        # print("y shape:", y.shape, type(y))
+        # print(f"Train Index ({i}): {train_index}")
+        # print(f"Train Index Data Type: {train_index.dtype}")
+        train_X = vectorizer.fit_transform(X[train_index])
         verifier.fit(train_X, y[train_index])
         test_X_raw = vectorizer.transform(X[test_index])
-        logger.info("Running verifier on sub-sample")
+
         test_X, test_y, test_gt = make_up_lies(test_X_raw, y[test_index])
         test_scores = verifier.predict_proba(test_X, test_y, nb_imposters=30)
-        logger.info(f"Actually fitting...")
+
         shifter.fit(predicted_scores=test_scores, ground_truth_scores=test_gt)
     return shifter

@@ -44,7 +44,7 @@ logger = logging.getLogger("ruzicka")
 class Order2Verifier:
     """
 
-    Offers a generic implementation a generic implementation
+    Offers a generic implementation 
     of the authorship verification algorithm described in e.g.:
       - M. Koppel and Y. Winter (2014), Determining if Two Documents are
         by the Same Author, JASIST, 65(1): 178-187
@@ -154,7 +154,7 @@ class Order2Verifier:
 
         """
 
-        logger.info(f"Fitting on {len(y)} documents in {self.base} mode...")
+        # print(f"Fitting on {len(y)} documents in {self.base} mode...")
         if self.base == "instance":
             self.train_X = np.array(X, dtype="float")
             self.train_y = np.array(y, dtype="int")
@@ -219,10 +219,15 @@ class Order2Verifier:
         tv = test_vector[rnd_feature_idxs]
         for idx in range(self.train_y.size):
             if self.train_y[idx] == target_int:
-                d = self.metric_fn(self.train_X[idx][rnd_feature_idxs], tv)
+                try:
+                    d = self.metric_fn(self.train_X[idx][rnd_feature_idxs], tv)
+                except ZeroDivisionError:
+                    d = 0
                 if d < min_dist:
                     min_dist = d
-
+        # print("test_vector: ", test_vector, "target int: ",
+        #      target_int, "n feat: ", rnd_feature_idxs)
+        # print("minimum distance: ", min_dist)
         return min_dist
 
     def _dist_non_targets(
@@ -299,7 +304,9 @@ class Order2Verifier:
                     f"Division by zero encountered. "
                     f"Setting distance to infinity."
                 )
-
+        # print("test_vector: ", test_vector, "target same as before, but nb_imposters: ", nb_imposters,
+        #      "n feat: ", rnd_feature_idxs)
+        # print("sorted distance between imposters and test: ", np.sort(dists))
         return np.sort(dists)
 
     def predict_proba(
@@ -426,4 +433,7 @@ class Order2Verifier:
                             bootstrap_score += 1.0 / self.nb_bootstrap_iter
                 distances.append(bootstrap_score)
 
+        # print("\n\nInput for predict_proba: ", test_X, "\n",
+        #      test_y, "\n", nb_imposters)
+        # print("\noutput of predict_proba: ", np.array(distances))
         return np.array(distances, dtype="float64")

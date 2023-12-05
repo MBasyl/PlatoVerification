@@ -8,111 +8,180 @@ from ruzicka.Order2Verifier import Order2Verifier
 # from ruzicka.Order1Verifier import Order1Verifier
 from sklearn.preprocessing import LabelEncoder
 from ruzicka.utilities import *
-import matplotlib.pyplot as plt
-import seaborn as sb
+from ruzicka.score_shifting import ScoreShifter
+
 import pandas as pd
 import numpy as np
+from ruzicka.plot_res import plot_heatmap
+
+sys.stdout = open(f'GI_log.txt', 'a')
+
+# OBSERVATION:
+# 1. resizing to 10.000 words doesn't seem to affect results significantly
+# 2. for XenApology profile, best parameters: parsedw2; parsedw3(resized); plainw2
+# 3. for Hipparcus, the attribution to Plato is too strong... perhaps a better way to balance?
+# 4. indeed, for Epinomis attribution drops dramatically in resized 10k wrds, with exception of parsedFullw4
+# 5. for Epinomis, best par are: parsedResizedw(2-4) and parsedfullw4 and plainResizedw2
+# 6. for instance tryouts, no cutting into chunks beforehand, make cut-off afterwards.
+# 7. In general, method doesn't work.
+# 8. last try:
+#   a) docs split 1k, cut-off if 10k. each doc has to have at least 2k (letters not VII deleated).
+#   b) candidates: Plato + all pseudoPlatos vs Imposters: all rest of dataset
+#   c) try: plainw2,w3,char3,char5 +parsed w2,w3 > PROFILE + INSTANCE?
+#   d) final try: only plato, VII and Apo in candidates (happening to have 8k ca), all rest in imposters (exclude from imposters most obv not)
+# 9. BENCHMARKING ALL TRYS
 
 
-# get imposter data:
-train_data, _ = load_pan_dataset('data/GIdir/train')
-train_labels, train_documents = zip(*train_data)
+def load_dataset(directory, max_number_samples=None, ext="txt", encoding="utf8"):
+    """
+    Loads the data from `directory`, which should hold subdirs
+    for each "problem"/author in a dataset. 
 
-# get test data:
-test_data, _ = load_pan_dataset('data/GIdir/test')
-test_labels, test_documents = zip(*test_data)
+    Parameters
+    ----------
+    directory: str, default=None
+        Path the directory from which the `problems` are loaded.
+    ext: str, default='txt'
+        Only loads files with this extension,
+        useful to filter out e.g. OS-files.
 
-print("train_documents:", len(train_documents))
-print("train_labels:", len(train_labels))
-print("test_documents:", len(test_documents))
-print("test_labels:", len(test_labels))
+    Returns
+    ----------
+    labels:
+        list of author names
+    data:
+        list of documents
+
+    """
+
+    data = []
+
+    for author in sorted(os.listdir(directory)):
+        # print(author)
+        path = os.sep.join((directory, author))
+        if os.path.isdir(path):
+            for filepath in sorted(glob.glob(path + "/*." + ext)):
+                text = codecs.open(filepath, mode="r").read()
+                file = os.path.splitext(os.path.basename(filepath))[0]
+                number = file.split("_")[1]
+                if max_number_samples:
+                    if int(number) < max_number_samples:
+                        # combine same work?
+                        data.append((author, text))
+                else:
+                    data.append((author, text))
+
+    return data
 
 
-##############
-# set Parameters
-features = ['word']  # 'char/word' char_wb
-ngrams = [1]  # 3, 4,5 # ALSO TRY RANGE (3,5)
-bases = ['profile']  # , 'instance'
-vectors = ['tf_idf']  # 'tf_std',
-metric = 'minmax'
-nb_bootstrap_iter = 100
-rnd_prop = 0.5
-nb_imposters = 10
-mfi = 500  # number of most frequent features
-min_df = 2  # culling
+def main():
 
-#############
+    # fit encoder for author labels:
+    label_encoder = LabelEncoder()
+    label_encoder.fit(train_labels+test_labels)
+    train_ints = label_encoder.transform(train_labels)
+    test_ints = label_encoder.transform(test_labels)
 
-# fit encoder for author labels:
-label_encoder = LabelEncoder()
-label_encoder.fit(train_labels+test_labels)
-train_ints = label_encoder.transform(train_labels)
-test_ints = label_encoder.transform(test_labels)
+    vectorizer = Vectorizer(mfi=mfi,
+                            vector_space=vector,
+                            ngram_type=feature,
+                            ngram_size=ngram)
+    verifier = Order2Verifier(metric=metric,
+                              base=base,
+                              nb_bootstrap_iter=nb_bootstrap_iter,
+                              rnd_prop=rnd_prop
+                              )
+    # get benchmark
+    splitter = splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.2)
+    shifter = ScoreShifter()
+    shifter = fit_shifter(np.array(train_documents), train_ints, vectorizer, verifier,
+                          shifter, test_size=0.2)
+    benchmark_imposters(np.array(train_documents), train_ints,
+                        splitter, vectorizer, verifier, shifter)
+    # fit vectorizer:
+    train_X = vectorizer.fit_transform(
+        train_documents)  # .toarray()
+    test_X = vectorizer.transform(test_documents)  # .toarray()
 
-for base in bases:
-    for vector in vectors:
-        for feature in features:
-            for ngram in ngrams:
-                print("::::::::::::")
-                print("base:", base, "\tvector:", vector,
-                      "\tfeature:", feature, "\tngram:", ngram)
-                print("::::::::::::\n\n")
+    cols = ['label']
+    for test_author in sorted(set(test_ints)):
+        auth_label = label_encoder.inverse_transform([test_author])[
+            0]
+        cols.append(auth_label)
 
-                # fit vectorizer:
-                vectorizer = Vectorizer(mfi=mfi,
-                                        vector_space=vector,
-                                        ngram_type=feature,
-                                        ngram_size=ngram)
-                train_X = vectorizer.fit_transform(
-                    train_documents)  # .toarray()
-                test_X = vectorizer.transform(test_documents)  # .toarray()
-                print(train_documents)
-                print(train_X.shape)
-                print(type(train_documents))
-                exit(0)
-                cols = ['label']
-                for test_author in sorted(set(test_ints)):
-                    auth_label = label_encoder.inverse_transform([test_author])[
-                        0]
-                    cols.append(auth_label)
+    proba_df = pd.DataFrame(columns=cols)
 
-                proba_df = pd.DataFrame(columns=cols)
+    for idx in range(len(test_documents)):
+        target_auth = test_ints[idx]
+        target_docu = test_X[idx]
+        non_target_test_ints = np.array(
+            [test_ints[i] for i in range(len(test_ints)) if i != idx])
+        non_target_test_X = np.array([test_X[i]
+                                      for i in range(len(test_ints)) if i != idx])
+        tmp_train_X = np.vstack((train_X, non_target_test_X))
+        tmp_train_y = np.hstack((train_ints, non_target_test_ints))
 
-                for idx in range(len(test_documents)):
-                    target_auth = test_ints[idx]
-                    target_docu = test_X[idx]
-                    non_target_test_ints = np.array(
-                        [test_ints[i] for i in range(len(test_ints)) if i != idx])
-                    non_target_test_X = np.array([test_X[i]
-                                                  for i in range(len(test_ints)) if i != idx])
-                    tmp_train_X = np.vstack((train_X, non_target_test_X))
-                    tmp_train_y = np.hstack((train_ints, non_target_test_ints))
+        tmp_test_X, tmp_test_y = [], []
+        for t_auth in sorted(set(test_ints)):
+            tmp_test_X.append(target_docu)
+            tmp_test_y.append(t_auth)
 
-                    tmp_test_X, tmp_test_y = [], []
-                    for t_auth in sorted(set(test_ints)):
-                        tmp_test_X.append(target_docu)
-                        tmp_test_y.append(t_auth)
+        # fit the verifier:
 
-                    # fit the verifier:
-                    verifier = Order2Verifier(metric=metric,
-                                              base=base,
-                                              nb_bootstrap_iter=nb_bootstrap_iter,
-                                              rnd_prop=rnd_prop
-                                              )
-                    verifier.fit(tmp_train_X, tmp_train_y)
-                    probas = verifier.predict_proba(test_X=tmp_test_X,
-                                                    test_y=tmp_test_y,
-                                                    nb_imposters=nb_imposters
-                                                    )
+        predicted = verifier.fit(tmp_train_X, tmp_train_y)
 
-                    row = [label_encoder.inverse_transform(
-                        [target_auth])[0]]  # author label
-                    row += list(probas)
-                    # print(row)
-                    proba_df.loc[len(proba_df)] = row
+        probas = verifier.predict_proba(test_X=tmp_test_X,
+                                        test_y=tmp_test_y,
+                                        nb_imposters=nb_imposters
+                                        )
 
-                proba_df = proba_df.set_index('label')
+        row = [label_encoder.inverse_transform(
+            [target_auth])[0]]  # author label
+        row += list(probas)  # probas!!
+        # print(row)
+        proba_df.loc[len(proba_df)] = row
 
-                # write away score tables:
-                proba_df.to_csv('outputs/tab'+base+'_'+feature +
-                                '_'+str(ngram)+'_'+metric+'_'+vector+'.csv')
+    proba_df = proba_df.set_index('label')
+
+    return proba_df
+
+
+if __name__ == "__main__":
+    # "Unk_let7" to address: used PsPla as their own single distractors and divide Plato chronologically?
+    # parsedw2; parsedw3(resized); plainw2
+
+    # get imposter data:
+    train_data = load_dataset('data/GIplain/train')
+    train_labels, train_documents = zip(*train_data)
+
+    # get test data:
+    test_data = load_dataset('data/GIplain/test', 11)
+    test_labels, test_documents = zip(*test_data)
+
+    print("train documents:", len(train_documents), "labels:", len(train_labels))
+    print("test documents:", len(test_documents), "labels:", len(test_labels))
+
+    ##############
+    # set Parameters
+    feature = 'char_wb'  # 'char/word' char_wb
+    ngram = 4  # 3, 4,5 # ALSO TRY RANGE (3,5)
+    base = 'profile'  # , 'instance'
+    vector = 'tf_idf'  # 'tf_std',
+    metric = 'minmax'
+    nb_bootstrap_iter = 100
+    rnd_prop = 0.5  # aka number of feature selected per iteration
+    nb_imposters = 10  # aka 90%?
+    mfi = 500  # number of most frequent features
+    min_df = 4  # culling
+
+    #############
+    # Hip, XenApo, Epi, Parm
+
+    filename = 'outputs/PlatoApoDisp2_Profile_parsed10k_w4.csv'
+    print(filename)
+
+    # df_res = main()
+    # write away score tables:
+    # df_res.to_csv(filename)
+
+    plot_heatmap(filename)

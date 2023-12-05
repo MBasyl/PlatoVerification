@@ -54,8 +54,8 @@ Test-run: On polygraphous Xenophon (tlg: 0032): 14 texts
 - classifiers
   - SVM using code adapted from https://github.com/avjves/AuthAttHelper/blob/master/wrapper.py#L73
     #build PIPELINE FOR IT!!! C_CHOICE > CV > FIRST PLOT > MAIN > BEST_FEAT > LAST PLOT
-  - GI-instance using code adapted from ...
-  - GI-profile
+  - GI-profile and instance using code adapted from https://github.com/mikekestemont/ruzicka
+    #use parse_dir for data setup > parformGI.py choose parameters
   - Masking?
   - Diff-Vec?
 - Neural Networks
