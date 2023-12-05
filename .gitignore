@@ -6,6 +6,8 @@ old*.py
 *.txt
 *.csv
 *.json
+*.png
+.DS_Store
 
 
 # Byte-compiled / optimized / DLL files
