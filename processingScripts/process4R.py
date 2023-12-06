@@ -27,8 +27,8 @@ def strip_accents(s):
 def no_NERaccents(text):
     # remove accents
     # combinazione = ["ἄἅἂἃἆἇἔἕἒἓἕἤἥἢἣἦἧἴἵἲἳἶἷὄοὅὂὃὔὕὒὓὖὗὤὥὢὣὦὧ"]
-    no_NER = replace_named_entities(text)
-    no_tags = re.sub(r'(\.\s..\.)|(\.\s...\.)', '', no_NER)
+    # no_NER = replace_named_entities(text)
+    no_tags = re.sub(r'(\.\s..\.)|(\.\s...\.)', '', text)
     # no_accents = strip_accents(no_NER)
     caps = sentenceCapitalizer(no_tags)
     final_clean = re.sub(r'\s+', ' ', caps)  # remove extra whitespace
@@ -51,13 +51,14 @@ def clean_corpus(folder):
         # lemmatize and save in Rcorpus/lemmata
             # lemmatizing(clean_text)  # POS??
         # save clean file in Rcorpus/plain
-            with open(f'Rcorpus/{file.split("/")[-1]}', 'w') as f:
+            with open(f'platoinstances/{file.split("/")[-1]}', 'w') as f:
                 f.write(clean_text)
                 f.close()
-    print("Files done in Rcorpus!\n\n")
+    print("Files done in platoinstances!\n\n")
     return
 
 
 if __name__ == '__main__':
-    folder = 'rawCorpus'
+    folder = 'processedXML'
+    clean_corpus(folder)
     # folder = 'PsPlaProcess'

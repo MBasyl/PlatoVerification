@@ -1,7 +1,7 @@
 import glob
 from bs4 import BeautifulSoup
 import re
-
+import os
 # spirito = ["ἀἁαἐἑεἠἡηἰἱιὀοὁὐὑυὠὡω"]
 # accento = ["άὰᾶέὲήὴῆίὶῖόὸύὺῦώὼῶ"]
 # combinazione = ["ἄἅἂἃἆἇἔἕἒἓἕἤἥἢἣἦἧἴἵἲἳἶἷὄοὅὂὃὔὕὒὓὖὗὤὥὢὣὦὧ"]
@@ -37,7 +37,7 @@ def processLetters(data):
 
                 final_content = clean(content)
 
-                output_file_path = f"rawCorpus/PsPla_let{letter_num}.txt"
+                output_file_path = f"processedXML/PsPla_{letter_num}.txt"
                 with open(output_file_path, 'w', encoding='utf-8') as output_file:
                     output_file.write(f"{final_content}")
                     output_file.close()
@@ -66,12 +66,15 @@ def parse_tei(data):
         body = soup.find('body')
         for lab in body.find_all('label'):
             lab.decompose()
+        for quote in body.find_all('quote'):
+            quote.decompose()
         content = ' '.join([p.text.strip()
                             for p in body.find_all('p')])
         final_content = clean(content)
 
+        os.makedirs("processedXML", exist_ok=True)
         # write txt file with title, author, and content
-        with open(f"rawCorpus/{new_title}.txt", "w") as f:
+        with open(f"processedXML/{new_title}.txt", "w") as f:
             f.write(f"{final_content}")
             f.close()
     return [author, title]
@@ -93,5 +96,5 @@ def process_files(folder):
 
 if __name__ == "__main__":
 
-    authorList = process_files("rawCorpus")
-    processLetters("rawCorpus/tlg0059.tlg036.perseus-grc2.xml")
+    authorList = process_files("data/rawCorpus")
+    processLetters("data/rawCorpus/tlg0059.tlg036.perseus-grc2.xml")

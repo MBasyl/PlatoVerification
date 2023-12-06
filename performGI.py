@@ -16,21 +16,6 @@ from ruzicka.plot_res import plot_heatmap
 
 sys.stdout = open(f'GI_log.txt', 'a')
 
-# OBSERVATION:
-# 1. resizing to 10.000 words doesn't seem to affect results significantly
-# 2. for XenApology profile, best parameters: parsedw2; parsedw3(resized); plainw2
-# 3. for Hipparcus, the attribution to Plato is too strong... perhaps a better way to balance?
-# 4. indeed, for Epinomis attribution drops dramatically in resized 10k wrds, with exception of parsedFullw4
-# 5. for Epinomis, best par are: parsedResizedw(2-4) and parsedfullw4 and plainResizedw2
-# 6. for instance tryouts, no cutting into chunks beforehand, make cut-off afterwards.
-# 7. In general, method doesn't work.
-# 8. last try:
-#   a) docs split 1k, cut-off if 10k. each doc has to have at least 2k (letters not VII deleated).
-#   b) candidates: Plato + all pseudoPlatos vs Imposters: all rest of dataset
-#   c) try: plainw2,w3,char3,char5 +parsed w2,w3 > PROFILE + INSTANCE?
-#   d) final try: only plato, VII and Apo in candidates (happening to have 8k ca), all rest in imposters (exclude from imposters most obv not)
-# 9. BENCHMARKING ALL TRYS
-
 
 def load_dataset(directory, max_number_samples=None, ext="txt", encoding="utf8"):
     """

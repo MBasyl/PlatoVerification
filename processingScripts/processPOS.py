@@ -3,6 +3,7 @@ from cltk import NLP
 import time as t
 import glob
 import re
+import os
 
 
 def process_catruplets(tuples):
@@ -34,21 +35,21 @@ def lemmatize(txt, filename, simple=True):
     doc = nlp.analyze(text=txt)
 
     # To extract complex morpho-syntactic sequences
-    # morpho_syn = []
-    # for word in doc.words:
-    #    morpho_syn.append((word.string, word.pos, word.upos,
-    #                      word.dependency_relation, word.governor))
+    morpho_syn = []
+    for word in doc.words:
+        morpho_syn.append((word.string, word.pos, word.upos,
+                          word.dependency_relation, word.governor))
 
     # To extract basic NOUN/VERB-stopword sequences
-    tuple_tags = []
-    for word in zip(doc.lemmata, doc.pos):  # OR LEMMATA/tokens
-        tuple_tags.append(word)
+    # tuple_tags = []
+    # for word in zip(doc.lemmata, doc.pos):  # OR LEMMATA/tokens
+    #    tuple_tags.append(word)
 
     # CHOOSE IF COMPLEX OR SIMPLE VERSION
     # if simple:
-    masked_string = process_tuples(tuple_tags)
+    # masked_string = process_tuples(morpho_syn)
 
-    # masked_string = process_catruplets(morpho_syn)
+    masked_string = process_catruplets(morpho_syn)
     masked_string = re.sub("--", "-", masked_string)
 
     end_time = t.time()
@@ -57,7 +58,8 @@ def lemmatize(txt, filename, simple=True):
 
     # save morpho_syn to text file
     new_name = filename.split('/')[-1]
-    with open(f"data/MorphoSynCorpus/{new_name}", "w", encoding='utf-8') as f:
+
+    with open(f"allinstancesPASRED/{new_name}", "w", encoding='utf-8') as f:
         f.write(str(masked_string))
         print(f"written {new_name} to MorphoSynCorpus")
 
@@ -75,7 +77,8 @@ def no_NERaccents(text):
 
 
 if __name__ == "__main__":
-    f = 'data/RCorpus'
+    f = 'allinstances'
+    os.makedirs("allinstancesPASRED", exist_ok=True)
     for file in glob.glob(f + '/*.txt'):
         content = open(file, 'r').read()
         content = no_NERaccents(content)
