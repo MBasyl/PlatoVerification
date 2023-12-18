@@ -54,8 +54,41 @@ def text_bar_chart(data,  title, x='Authors', y='Word count', color='Label'):
     fig.show()
 
 
+def reduce_sparsity(df, threshold=0.25):
+    """
+    Reduce sparsity in a DataFrame at the column level.
+
+    Parameters:
+    - df (pd.DataFrame): Input DataFrame.
+    - threshold (float): Threshold for sparsity. Columns with a fraction
+                         of zero values above this threshold will be removed.
+
+    Returns:
+    - DataFrame with reduced sparsity.
+    """
+    # Calculate the fraction of zero values per column
+    zero_fraction = (df == 0).mean()
+
+    # Identify columns to keep based on the threshold
+    columns_to_keep = zero_fraction[zero_fraction <= threshold].index
+
+    # Create a new DataFrame with reduced sparsity
+    reduced_df = df[columns_to_keep].copy()
+
+    return reduced_df
+
+
 if __name__ == "__main__":
 
+    df = pd.read_csv(
+        "frequency_matrixes/frequency('w', 5)PARSEDPlato.csv", index_col=0)
+    print(df)
+    # Apply the function to reduce sparsity
+    reduced_df = reduce_sparsity(df, threshold=0.75)
+
+    # Display the reduced DataFrame
+    print(reduced_df)
+    exit(0)
     df = pd.read_csv("OverviewrawCorpus2.csv", sep=";")
     # Get full names of authors:
     f = pd.read_csv("authorListrev.txt", header=None)

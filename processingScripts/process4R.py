@@ -9,7 +9,8 @@ from cleanCSV import sentenceCapitalizer
 def replace_named_entities(string1):
     """reads lists of named entities and substitutes them in text with '*'
     """
-    named_entities = open('NER_tokens.txt', 'r').read().splitlines()
+    named_entities = open(
+        'outputs/processing_lists/NER_tokens.txt', 'r').read().splitlines()
 
     pattern = re.compile(r'\w+')
     cleanstring = ['*' if any(m.group() in named_entities for m in pattern.finditer(
@@ -27,8 +28,8 @@ def strip_accents(s):
 def no_NERaccents(text):
     # remove accents
     # combinazione = ["ἄἅἂἃἆἇἔἕἒἓἕἤἥἢἣἦἧἴἵἲἳἶἷὄοὅὂὃὔὕὒὓὖὗὤὥὢὣὦὧ"]
-    # no_NER = replace_named_entities(text)
-    no_tags = re.sub(r'(\.\s..\.)|(\.\s...\.)', '', text)
+    no_NER = replace_named_entities(text)
+    no_tags = re.sub(r'(\.\s..\.)|(\.\s...\.)', '', no_NER)
     # no_accents = strip_accents(no_NER)
     caps = sentenceCapitalizer(no_tags)
     final_clean = re.sub(r'\s+', ' ', caps)  # remove extra whitespace
@@ -51,7 +52,7 @@ def clean_corpus(folder):
         # lemmatize and save in Rcorpus/lemmata
             # lemmatizing(clean_text)  # POS??
         # save clean file in Rcorpus/plain
-            with open(f'platoinstances/{file.split("/")[-1]}', 'w') as f:
+            with open(f'platoCorpus/PLAIN/{file.split("/")[-1]}', 'w') as f:
                 f.write(clean_text)
                 f.close()
     print("Files done in platoinstances!\n\n")
@@ -59,6 +60,6 @@ def clean_corpus(folder):
 
 
 if __name__ == '__main__':
-    folder = 'processedXML'
+    folder = 'data/processedXML/plato'
     clean_corpus(folder)
     # folder = 'PsPlaProcess'
