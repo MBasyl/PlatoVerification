@@ -1,15 +1,17 @@
 #Personal files
-scr*.py
+*scr*
 *Test*.py
 *try*.py
-old*.py
+old*
 *.txt
 *.csv
 *.json
 *.png
-.DS_Store
+*.DS_Store
 svmenv
-test*.py
+test*
+outputs
+data
 
 
 # Byte-compiled / optimized / DLL files
