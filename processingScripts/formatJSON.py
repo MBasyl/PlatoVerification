@@ -1,5 +1,7 @@
 import json
 import os
+import json
+import random
 
 
 def format_directory_to_json(directory_path):
@@ -34,14 +36,40 @@ def format_directory_to_json(directory_path):
     return data
 
 
+def split_dataset(dataset):
+    # Initialize train and test datasets
+    train_dataset = {}
+    test_dataset = {}
+
+    for key, subdict in dataset.items():
+        # Extract keys and shuffle them
+        keys = list(subdict.keys())
+        random.shuffle(keys)
+
+        # Split keys into train and test (with train having the extra one if odd)
+        split_point = len(keys) // 2 + len(keys) % 2
+        train_keys = keys[:split_point]
+        test_keys = keys[split_point:]
+
+        # Populate train dataset
+        train_dataset[key] = {k: subdict[k] for k in train_keys}
+
+        # Populate test dataset
+        test_dataset[key] = {k: subdict[k] for k in test_keys}
+
+    return train_dataset, test_dataset
+
+
 if __name__ == "__main__":
 
-    folder = "data/MorphoSynCorpus"
+    folder = "platoCorpus/PLAIN"
     formatted_data = format_directory_to_json(folder)
 
+    # train, test = split_dataset(formatted_data)
     # Save the formatted data as a JSON file
-    output_path = os.path.join("data", "MorphoSynCorpus", "ParsedPlato.json")
-    with open(output_path, 'w', encoding='utf-8') as json_file:
+    # with open("PlatoCorpus/PLAINaug/ParsedPlatoSPLITtrain.json", 'w', encoding='utf-8') as json_file:
+    #    json.dump(train, json_file, indent=4)
+    with open("PlatoCorpus/PLAINaug/ProfilePlato.json", 'w', encoding='utf-8') as json_file:
         json.dump(formatted_data, json_file, indent=4)
 
-    print(f"Formatted data saved to: {output_path}")
+    print(f"Formatted data saved to: {json_file}")

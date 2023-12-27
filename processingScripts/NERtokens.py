@@ -1,6 +1,8 @@
 from cltk.tag import ner
 import time as t
 import glob
+import re
+import os
 
 
 def create_ner(text):
@@ -16,7 +18,7 @@ def write_ALLner(flat_list, folder):
     # sort alphabetically
     word_count_ordered = sorted(set(flat_list))
 
-    with open(f'NER_tokens{folder}.txt', 'w', newline='') as file:
+    with open(f'outputs/processing_lists/newNER_tokens.txt', 'w', newline='') as file:
         for el in word_count_ordered:
             file.write(el + '\n')
 
@@ -45,6 +47,34 @@ def NER_list(folder):
     return
 
 
+def replace_named_entities(string1):
+    """reads lists of named entities and substitutes them in text with '*'
+    """
+    named_entities = open(
+        'outputs/processing_lists/NER_tokens.txt', 'r').read().splitlines()
+
+    pattern = re.compile(r'\w+')
+    cleanstring = ['PROPN' if any(m.group() in named_entities for m in pattern.finditer(
+        s)) else s for s in string1.split(" ")]
+
+    return ' '.join(cleanstring)
+
+
+def main(f, out):
+    for file in glob.glob(f + '/*.txt'):
+        # sub NER
+        text = open(file, 'r').read()
+        clean_text = replace_named_entities(text)
+        filename = file.split("/")[-1]
+        input_file_path = os.path.join(out, filename)
+        with open(input_file_path, 'w') as f:
+            f.write(clean_text)
+            f.close()
+
+
 if __name__ == "__main__":
-    f = 'Rcorpus'
-    NER_list(f)
+    f = 'data/processedXML'
+    # NER_list(f)
+    outpath = 'data/PLAIN'
+    # apply only replace_named_entities() on a dir
+    main(f, outpath)

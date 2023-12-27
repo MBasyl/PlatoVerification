@@ -9,7 +9,7 @@ def chunk_text(input_text, chunk_size):
     chunks = [words[i:i + chunk_size]
               for i in range(0, len(words), chunk_size)]
 
-    chunks = [chunk for chunk in chunks if len(chunk) == chunk_size]
+    chunks = [chunk for chunk in chunks if len(chunk) <= chunk_size]
 
     return chunks
 
@@ -52,7 +52,7 @@ def group_and_chunk(input_directory, output_directory, chunk_size=1000):
             #        f"{filename}_{i + 1}: {words_dropped} words dropped\n")
 
 
-def split_train_test(input_directory, output_directory='data/GIplain', test_size=0.2):
+def split_train_test(input_directory, output_directory='data/GIprofiles', test_size=0.2):
     """split author subdirectories in test and train"""
     # Create subdirectories for 'test' and 'train'
     os.makedirs(output_directory, exist_ok=True)
@@ -64,7 +64,7 @@ def split_train_test(input_directory, output_directory='data/GIplain', test_size
     authors = [author for author in os.listdir(
         input_directory) if os.path.isdir(os.path.join(input_directory, author))]
     test_authors = [auth for auth in authors if auth in [
-        'Pla', 'Disputed', 'PsPla']]
+        'Pla', 'Disputed']]  # Ano*
     train_authors = [auth for auth in authors if auth not in test_authors]
     # Split the authors into train and test
     # train_authors, test_authors = train_test_split(
@@ -140,12 +140,13 @@ def combine_authors_profiles(input_directory, output_directory):
 
 
 if __name__ == "__main__":
-    input_corpus_directory = "data/Rcorpus"
-    output_corpus_directory = "data/MLcorpus"
+    input_corpus_directory = "data/GI"
+    output_corpus_directory = "data/GI/preprocess"
 
     os.makedirs(output_corpus_directory, exist_ok=True)
-    # group_and_chunk(input_corpus_directory, output_corpus_directory)
-    # split_train_test(output_corpus_directory)
+    group_and_chunk(input_corpus_directory,
+                    output_corpus_directory, chunk_size=5000)
+    split_train_test(output_corpus_directory)
 
     early = ["1Eu", "2Eu", "Cha", "Cra", "Cri", "Pro"
              "Gor", "Him", "Ion", "Lac", "Lys"]
@@ -154,4 +155,4 @@ if __name__ == "__main__":
     # combine_plato_profiles(work_list= mid, input_input_directory=input_directory_path, new_file_name="Plato_Mid",output_file_name=None)
 
     # Call the function to combine files by trigram
-    combine_authors_profiles(input_directory_path, output_directory)
+    # combine_authors_profiles(input_directory_path, output_directory)

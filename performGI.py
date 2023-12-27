@@ -38,7 +38,6 @@ def load_dataset(directory, max_number_samples=None, ext="txt", encoding="utf8")
         list of documents
 
     """
-
     data = []
 
     for author in sorted(os.listdir(directory)):
@@ -79,8 +78,8 @@ def main():
     # get benchmark
     splitter = splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.2)
     shifter = ScoreShifter()
-    shifter = fit_shifter(np.array(train_documents), train_ints, vectorizer, verifier,
-                          shifter, test_size=0.2)
+    shifter = fit_shifter(np.array(train_documents), train_ints,
+                          vectorizer, verifier, shifter, test_size=0.2)
     benchmark_imposters(np.array(train_documents), train_ints,
                         splitter, vectorizer, verifier, shifter)
     # fit vectorizer:
@@ -114,7 +113,7 @@ def main():
         # fit the verifier:
 
         predicted = verifier.fit(tmp_train_X, tmp_train_y)
-
+        print(predicted)
         probas = verifier.predict_proba(test_X=tmp_test_X,
                                         test_y=tmp_test_y,
                                         nb_imposters=nb_imposters
@@ -132,15 +131,13 @@ def main():
 
 
 if __name__ == "__main__":
-    # "Unk_let7" to address: used PsPla as their own single distractors and divide Plato chronologically?
-    # parsedw2; parsedw3(resized); plainw2
 
     # get imposter data:
-    train_data = load_dataset('data/GIplain/train')
+    train_data = load_dataset('data/GIprofiles/train')
     train_labels, train_documents = zip(*train_data)
 
     # get test data:
-    test_data = load_dataset('data/GIplain/test', 11)
+    test_data = load_dataset('data/GIprofiles/test')  # 5
     test_labels, test_documents = zip(*test_data)
 
     print("train documents:", len(train_documents), "labels:", len(train_labels))
@@ -149,7 +146,7 @@ if __name__ == "__main__":
     ##############
     # set Parameters
     feature = 'char_wb'  # 'char/word' char_wb
-    ngram = 4  # 3, 4,5 # ALSO TRY RANGE (3,5)
+    ngram = 5  # 3, 4,5 # ALSO TRY RANGE (3,5)
     base = 'profile'  # , 'instance'
     vector = 'tf_idf'  # 'tf_std',
     metric = 'minmax'
@@ -162,11 +159,11 @@ if __name__ == "__main__":
     #############
     # Hip, XenApo, Epi, Parm
 
-    filename = 'outputs/PlatoApoDisp2_Profile_parsed10k_w4.csv'
+    filename = 'Plato_Instances_plain_c5.csv'
     print(filename)
 
-    # df_res = main()
+    df_res = main()
     # write away score tables:
-    # df_res.to_csv(filename)
+    df_res.to_csv(filename)
 
     plot_heatmap(filename)

@@ -1,7 +1,7 @@
 #Personal files
 scr*.py
 *Test*.py
-try*.py
+*try*.py
 old*.py
 *.txt
 *.csv

@@ -6,8 +6,6 @@ import processingScripts.processXML as process
 import processingScripts.NERtokens as ne
 import processingScripts.getTXTstatistics as statistics
 import parse_dir
-import convert2csv
-import processingScripts.cleanCSV as clean
 
 
 def preprocessing(folder):

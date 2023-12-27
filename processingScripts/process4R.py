@@ -2,8 +2,19 @@ import time as t
 import glob
 import re
 import unicodedata
-from cleanCSV import sentenceCapitalizer
 # pre-process corpus for R stylo
+
+def sentenceCapitalizer(text):
+    # Split the text into sentences using regular expressions
+    punkt = r'(?<=[.;·])\s+'
+    sentences = re.split(punkt, text)
+    # Capitalize the first letter of each sentence
+    sentences = [sentence.capitalize(
+    ) if sentence and sentence not in punkt else sentence for sentence in sentences]
+    # Join the sentences back together
+    string12 = ' '.join(sentences)
+
+    return string12
 
 
 def replace_named_entities(string1):

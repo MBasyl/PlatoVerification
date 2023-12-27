@@ -101,18 +101,23 @@ def obfuscate(input_dir, output_plain, output_parsed, p=0.10, pseudo=True):
 
             #  inject random sentences
             if pseudo:
-                new_filename = f'PsPla#{p}_Law-1Al_{n_chunk}'
-                alcibiades = open("data/PLAIN/PsPla_1Al.txt",
+                new_filename = f'PsPla#{p}_Law-VII_{n_chunk}'
+                alcibiades = open("data/processedXML/Disputed_VII.txt",  # Pla_Sop, data/processedXML/Disputed_VII.txt
                                   "r", encoding="utf-8")
                 subs = alcibiades.read().split(". ")
-                for el in random.sample(subs, i):
-                    sentences.append(el)
+                try:
+                    for el in random.sample(subs, i):
+                        sentences.append(el)
+                except ValueError:
+                    print("Skipping...\n")
+                    continue
 
             else:
                 new_filename = f'PsPla#{p}_Law-Pol_{n_chunk}'
                 aristotle = open("data/PLAIN/Ari_Pol.txt",
                                  "r", encoding="utf-8")
                 subs = aristotle.read().split(". ")
+
                 for el in random.sample(subs, i):
                     sentences.append(el)
 
@@ -134,26 +139,27 @@ def obfuscate(input_dir, output_plain, output_parsed, p=0.10, pseudo=True):
 
 
 # process singular file: LAWS
-input_dir = 'data/PlainLaws'
-output_plain_dir = 'data/PlainLaws/PLAIN'
-output_parsed_dir = 'data/PlainLaws/PARSED'
-
-os.makedirs(output_plain_dir, exist_ok=True)
-os.makedirs(output_parsed_dir, exist_ok=True)
-
-# obfuscate(input_dir, output_plain_dir, output_parsed_dir, p=0.25, pseudo=True)
-percentage = [0.1, 0.25, 0.5, 0.7, 0.85, 0.91]
-ari = [True, False]
-for per in percentage:
-    for a in ari:
-        obfuscate(input_dir, output_plain_dir,
-                  output_parsed_dir, p=per, pseudo=a)
-
-exit(0)
-os.makedirs("data/PlainLaws", exist_ok=True)
+file_path = 'data/processedXML/configureLaws/Pla_Law.txt'
+new_file = 'Pla_Law2.txt'
 # extract random chunk to add to Plato profile (place it in PLAIN)
-extract_random_chunk(file_path, new_file, chunk_size=15000)
+# extract_random_chunk(file_path, new_file, chunk_size=8000)
 print("Now MANUALLY clip off hanging sentences")
+
+
+# make file PLAIN
+f = open(new_file, "r", encoding='utf-8')
+text = f.read()
+PLAIN_text = replace_named_entities(text)
+with open("Pla_Law2PLAIN.txt", "w", encoding="utf-8") as output_file:
+    output_file.write(PLAIN_text)
+    output_file.close()
+# make file PARSED
+PARSED_text = annotate_pos(text)
+with open("Pla_Law2PARSED.txt", "w", encoding="utf-8") as output_file:
+    output_file.write(PARSED_text)
+    output_file.close()
+
+
 exit(0)
 content = open(new_file, 'r').read()
 content = processpos.no_NERaccents(content)

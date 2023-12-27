@@ -120,6 +120,8 @@ def txt_to_words(text, features, ngram_size, splitting_rule=None, preserve_case=
 
     # extract text from list
     text = "".join(text)
+    if features == 'c':
+        text = re.sub('PROPN', "*", text)
     # If no custom splitting rule was detected...
     if splitting_rule is None or len(splitting_rule) == 0:
         # Splitting into units specified by the regular expression
@@ -212,6 +214,9 @@ def make_frequency_list(data: dict, value=False, head=None, relative=True):
     # If relative frequencies were requested, they are normalized
     if relative:
         frequent_features = frequent_features / len(np.concatenate(data)) * 100
+        print(frequent_features)
+        print(len(np.concatenate(data)))
+        exit(0)
 
     # Additionally, one might limit the number of the most frequent features
     if isinstance(head, (int, float)):
@@ -236,12 +241,11 @@ def make_frequency_table(data: dict, frequencies):
     return frequency_df
 
 
-def main():
+def main(head):
     tokenized_corpus = load_corpus_and_parse(
         files="all", corpus_dir=input_dir, features=feat, ngram_size=n, encoding="UTF-8")
-    # print(tokenized_corpus.keys())
 
-    freq_list = make_frequency_list(tokenized_corpus, head=3000)
+    freq_list = make_frequency_list(tokenized_corpus, head=head)
     df = make_frequency_table(tokenized_corpus, freq_list)
     ##
     # Split index into 'author' and 'text' columns
@@ -254,16 +258,21 @@ def main():
     # Drop the original index column
     df = df.reset_index(drop=True)
 
-    df.to_csv(f"frequency{feat,n}PLAINPlato.csv", index=False)
+    df.to_csv(f"adhoc5cPLAINPlato.csv", index=False)
     # index=list(df.index))
-    print(df.info())
+    print(df)
     print("done!", feat, n)
     return df
 
 
-
 if __name__ == '__main__':
-    
+    # Assuming you have a DataFrame named 'token_freq_df' with authors as index and tokens as columns.
+    # Each cell contains the frequency of the corresponding token for the respective author.
+
+    input_dir = 'data/secondadhoc/PLAIN'
+    feat = 'c'
+    n = 5
+    main(head=3000)
 
     exit(0)
     input_dir = 'platoCorpus/PLAIN'

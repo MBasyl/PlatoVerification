@@ -3,18 +3,6 @@ from cltk import NLP
 import time as t
 import glob
 import re
-import os
-
-
-def process_triples(tuples):
-    result = []
-    for string, pos, upos in tuples:
-        if upos in ['PROPN', 'NOUN', 'AUX', 'VERB', 'PRON']:
-            result.append(upos)
-        else:
-            result.append(string)
-
-    return ' '.join(result)
 
 
 def process_catruplets(tuples):
@@ -39,7 +27,7 @@ def process_tuples(tuples):
     return ' '.join(result)
 
 
-def lemmatize(txt, filename, simple=True):
+def annotate_pos(txt, filename, simple=True):
     start_time = t.time()
     nlp = NLP(language="grc", suppress_banner=True)
     print("NLPing...", filename)
@@ -47,7 +35,6 @@ def lemmatize(txt, filename, simple=True):
 
     # To extract complex morpho-syntactic sequences
     morpho_syn = []
-
     # for word in doc.words:
     # morpho_syn.append((word.string, word.pos, word.upos,
     #                  word.dependency_relation, word.governor))
@@ -74,16 +61,16 @@ def lemmatize(txt, filename, simple=True):
     # save morpho_syn to text file
     new_name = filename.split('/')[-1]
 
-    with open(f"platoCorpus/PARSED/{new_name}", "w", encoding='utf-8') as f:
+    with open(f"data/PARSED/{new_name}", "w", encoding='utf-8') as f:
         f.write(str(masked_string))
-        print(f"written {new_name} to MorphoSynCorpus")
+        print(f"written {new_name} to data/PARSED")
 
     return
 
 
 def no_NERaccents(text):
 
-    no_tags = re.sub(r'(\.\s..\.)|(\.\s...\.)', '', text)
+    no_tags = re.sub(r'(\.\s..\.)|(\.\s...\.)', 'XXX', text)
     text = re.sub(r'\s\.\s', '. ', no_tags)
     final_clean = re.sub(r'\s+', ' ', text)  # remove extra whitespace
 
@@ -91,13 +78,10 @@ def no_NERaccents(text):
 
 
 if __name__ == "__main__":
-    f = 'data/processedXML/plato'
+    f = 'data/processedXML'
     # os.makedirs("allinstancesPASRED", exist_ok=True)
     for file in glob.glob(f + '/*.txt'):
         content = open(file, 'r').read()
         content = no_NERaccents(content)
-        lemmatize(content, file, simple=True)
-        # masked_content would have a splitting rule such as:
-        # "[^[A-Z]\s]+"
-
+        annotate_pos(content, file, simple=True)
         print("\n\nDone!")

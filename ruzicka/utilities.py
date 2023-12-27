@@ -10,7 +10,6 @@ import codecs
 import glob
 import os
 import sys
-import logging
 
 import numpy as np
 from sklearn.model_selection import train_test_split, StratifiedShuffleSplit

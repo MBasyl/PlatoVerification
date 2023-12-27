@@ -41,9 +41,7 @@ def word_count(file):
         # get string from file name
         title0 = file.split("/")[1]
         title = title0.split(".")[0]
-        text = f.read()
-        words = text.split()
-        word_count = len(words)
+        word_count = len(f.read().split())
         chunk_size = 1000
         # make dictionary
         stats_dictionary = {"Text_id": title,
