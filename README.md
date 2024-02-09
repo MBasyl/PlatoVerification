@@ -6,21 +6,14 @@
 
 from https://github.com/PerseusDL/canonical-greekLit and https://github.com/OpenGreekAndLatin/First1KGreek
 
-- Plato (tlg: 0059), then divided in:
+- Plato (tlg: 0059), divided in:
   - Plato
   - pseudoPlato
   - Epistles
-- Coeve Orators (prose)
-  - Alcidamas (tlg: 0610)
-  - Demosthenes (tlg: 0014)
-  - Isocrates (tlg: 0010)
-  - Lysias (tlg: 0540)
-  - Xenophon (tlg: 0032)
-  - Hyperides (tlg: 0030)
-  - Gorgias (tlg: 0593)
-- Philosophers
-  - Aristoteles (tlg: 0086)
-  - Xenocrates of Chalcedon (tlg: 0634)
+- Xenophon (tlg: 0032), divided in:
+  - Dialogues
+  - Historiographies
+  - Treatises
 
 ## Preprocessing (`main.py`)
 
