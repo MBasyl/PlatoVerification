@@ -2,6 +2,36 @@
 import os
 import shutil
 import re
+import glob
+import random
+
+
+def extract_random_chunk(file_path, new_file, chunk_size=8000):
+    with open(file_path, "r", encoding="utf-8") as file:
+        content = file.read()
+    print(len(content.split()))
+    # Find all sentence-ending positions
+    sentence_end_positions = [match.end()
+                              for match in re.finditer(r'[.;]', content)]
+
+    if not sentence_end_positions:
+        raise ValueError(
+            "No sentence-ending periods or question marks found in the document.")
+    # max_position = max(sentence_end_positions) - chunk_size
+    target = 557830  # sentence_end_positions.index(max_position)
+    subset_random = sentence_end_positions[:target]
+    # Randomly select a sentence-ending position to start the chunk
+    start_position = random.choice(subset_random)
+
+    # Find the nearest word boundary after the selected position
+    start_boundary = content.rfind(' ', 0, start_position) + 1
+
+    # Extract words from the selected position to meet the specified chunk size
+    words = re.findall(r'\S+', content[start_boundary:])
+    selected_chunk = ' '.join(words[:chunk_size])
+    print(len(selected_chunk.split()))
+    with open(new_file, "w", encoding="utf-8") as save_file:
+        save_file.write(selected_chunk)
 
 
 def count_words(text):
@@ -26,6 +56,25 @@ def cut_string_in_half(words):
     first_half = words[:halfway_point]
     second_half = words[halfway_point:]
     return first_half, second_half
+
+
+def make_dataset_dictionary(folder, max_length=4300):
+    """Make dictionary of AUTHOR-PROFILES"""
+    authors = []
+    text_name = []
+    contents = []
+    for file in glob.glob(folder + "/*.txt"):
+        content = open(file, "r", encoding="utf-8").read()
+        words = re.findall(r'\S+', content)
+        author, text = file.split("/")[-1].split(".")[0].split("_")
+        chunks = chunk_text(words, max_length, exact=True)
+        for c in chunks:
+            contents.append(' '.join(c))
+            text_name.append(text)
+            authors.append(author)
+    print(text_name)
+    print(len(text_name))
+    return authors, text_name, contents
 
 
 def chunk_text(words, chunk_size, exact=True):

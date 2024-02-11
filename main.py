@@ -35,9 +35,10 @@ preprocess_pipeline()
 # (performSVDD.py)
 
 # STEP 4: TO DO
-# Create OBFUSCATED testdata
-# Class Obfuscate
+# (obfuscate.py)
 
 # STEP 5: TO DO
+# on PLAIN: make . and ; as separate characters
+# split train/test/val!!
 # Perform SVM/RLP
-# Inspect fratures
+# Inspect features. i.e. start of sentences influent?
