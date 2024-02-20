@@ -4,6 +4,7 @@ import shutil
 import re
 import glob
 import random
+from collections import defaultdict
 
 
 def extract_random_chunk(file_path, new_file, chunk_size=8000):
@@ -36,6 +37,46 @@ def extract_random_chunk(file_path, new_file, chunk_size=8000):
 
 def count_words(text):
     return len(text.split())
+
+
+def count_ngrams(document, n, normalise=True):
+    """ extract and count all n-grams from a document.
+    Normalisation = frequencies summing to 1.0. For raw count = False"""
+    counts = defaultdict(float)  # Default to 0.0 if the key is not found
+    # Iterate through all n-grams in the document
+    for i in range(len(document) - n + 1):
+        ngram = document[i:i+n]  # generates ngrams
+        # Update the count of this n-gram.
+        counts[ngram] = counts[ngram] + 1
+    if normalise:
+        # Normalise so that sums equal 1
+        normalise_factor = float(len(document) - n + 1)
+        for ngram in counts:
+            counts[ngram] /= normalise_factor
+    return counts
+
+
+def count_tokens(document, n, normalise=True):
+    """ Extract and count all token-grams from a document.
+    Normalisation = frequencies summing to 1.0. For raw count = False"""
+    counts = defaultdict(float)  # Default to 0.0 if the key is not found
+
+    # Tokenize the document
+    tokens = document.split()
+
+    # Iterate through all n-grams in the document
+    for i in range(len(tokens) - n + 1):
+        ngram = ' '.join(tokens[i:i+n])  # Generate n-grams as tuples of tokens
+        # Update the count of this n-gram.
+        counts[ngram] += 1
+
+    if normalise:
+        # Normalise so that sums equal 1
+        normalise_factor = float(len(tokens) - n + 1)
+
+        for ngram in counts:
+            counts[ngram] /= normalise_factor
+    return counts
 
 
 def replace_named_entities(string1):
