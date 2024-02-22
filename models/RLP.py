@@ -1,5 +1,5 @@
 """
-Script modified from R. Layton, GitHub 
+Script modified from R. Layton 
 """
 from scipy.spatial import distance
 from operator import itemgetter

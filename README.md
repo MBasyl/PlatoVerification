@@ -20,13 +20,13 @@ Use `makedfprofiles.py` to create a DataFrame. Concatenates files into chronolog
 
 ## STEP 2 : UNSUPERVISED STUDY
 
-Perform Cluster Analysis using the [Stylo package](https://pages.github.com/)in R (``). 
+Perform Cluster Analysis using the [Stylo package](https://github.com/computationalstylistics/stylo)in R (``).[[1]](#1) 
 Perform Support Vector Data Description (`performSVDD.py`, adapted from [Kepeng Qiu](https://github.com/iqiukp/SVDD-Python)'s GitHub).
 
 ## STEP 3: SUPERVISED STUDY SETUP
 
 - Revise files assigned to positive label based on unsupervised insights
-- Create ad-hoc testset. Use `obfuscate.py` to obfuscate 5\% of Plato's _Laws_ with different percentages (50-90\%) of Pseudo*Plato \_Lovers*. This will allow a more fine-grained comprehension of the threshold for performance metrics.
+- Create ad-hoc testset. Use `obfuscate.py` to obfuscate 5\% of Plato's _Laws_ with different percentages (50-90\%) of Pseudo-Plato _Lovers_. This will allow a more fine-grained comprehension of the threshold for performance metrics.
 - Remove from dataset: _Lovers_ and the chunks of authentic _Laws_ used in obfuscation.
 
 **Models compared in this study**:
@@ -43,7 +43,19 @@ Perform Support Vector Data Description (`performSVDD.py`, adapted from [Kepeng 
   - Classifier: {'kernel': ['linear', 'rbf'], 'C': [0.1, 1, 100], 'class_weight':[None, 'balanced' ]}
 - Use 6-fold cross-validation to obtain the mean F1 and AUC-ROC
 - Execute SVM model on train-test
-- Get insights into learned features and predictions (``) with [SHAP package](https://pages.github.com/)
+- Get insights into learned features and predictions (`svmXAI.py`) with [SHAP package](https://github.com/shap/shap?tab=readme-ov-file)[[2]](#2)
 - Evaluate model by training the whole dataset and testing on Validation set
 
-### CNG-RLP model (``)
+### CNG-RLP model (`performUnaryCNG.py`)
+
+- Unary classification modified from R. Layton [[3]](#3) (cfr.`RLP.py` model) using CNG method[[4]](#4)
+
+## References
+
+<a id="1">[1]</a> Eder, M., Rybicki, J. and Kestemont, M. (2016). Stylometry with R: a package for computational text analysis. R Journal, 8(1): 107-21. https://journal.r-project.org/archive/2016/RJ-2016-007/index.html
+
+<a id="2">[2]</a> Lundberg, S. M., & Lee, S. I. (2017). A unified approach to interpreting model predictions. Advances in neural information processing systems, 30.
+
+<a id="3">[3]</a> Layton, R., Watters, P., & Dazeley, R. (2012). Recentred local profiles for authorship attribution. Natural Language Engineering, 18(3), 293-312.
+
+<a id="4">[4]</a> Kešelj, V., Peng, F., Cercone, N., & Thomas, C. (2003, August). N-gram-based author profiles for authorship attribution. In Proceedings of the conference pacific association for computational linguistics, PACLING (Vol. 3, pp. 255-264).
