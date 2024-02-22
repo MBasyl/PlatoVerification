@@ -5,6 +5,42 @@ import re
 import glob
 import random
 from collections import defaultdict
+import numpy as np
+from numpy.typing import NDArray
+
+
+def minmax(x, y: NDArray[np.float64]):
+    """
+    Calculates the pairwise "minmax" distance between
+    two vectors. Note that this function is symmetric,
+    so that `minmax(x, y) = minmax(y, x)`.
+
+    References:
+    ----------
+    - github ruzicka
+    - M. Koppel and Y. Winter (2014), Determining if Two
+      Documents are by the Same Author, JASIST, 65(1): 178-187.
+    - Cha SH. Comprehensive Survey on Distance/Similarity Measures
+      between Probability Density Functions. International Journ.
+      of Math. Models and Methods in Applied Sciences. 2007;
+      1(4):300–307.
+    """
+    assert x.shape == y.shape
+    mins, maxs = 0.0, 0.0
+    a, b = 0.0, 0.0
+    for i in range(x.shape[0]):
+        a, b = x[i], y[i]
+
+        if a >= b:
+            maxs += a
+            mins += b
+        else:
+            maxs += b
+            mins += a
+
+    if maxs >= 0.0:
+        return 1.0 - (mins / maxs)  # avoid zero division
+    return 0.0
 
 
 def extract_random_chunk(file_path, new_file, chunk_size=8000):
