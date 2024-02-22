@@ -20,21 +20,16 @@ Use `makedfprofiles.py` to create a DataFrame. Concatenates files into chronolog
 
 ## STEP 2 : UNSUPERVISED STUDY
 
-Perform Cluster Analysis using the [Stylo package](https://github.com/computationalstylistics/stylo)in R (``).[[1]](#1) 
-Perform Support Vector Data Description (`performSVDD.py`, adapted from [Kepeng Qiu](https://github.com/iqiukp/SVDD-Python)'s GitHub).
+Perform **Cluster Analysis** using the [Stylo package](https://github.com/computationalstylistics/stylo)in R (``).[[1]](#1) 
+\\
+Perform **Support Vector Data Description** (`performSVDD.py`, adapted from [Kepeng Qiu](https://github.com/iqiukp/SVDD-Python)'s GitHub).
 
-## STEP 3: SUPERVISED STUDY SETUP
+## STEP 3: SUPERVISED STUDY
 
 - Revise files assigned to positive label based on unsupervised insights
 - Create ad-hoc testset. Use `obfuscate.py` to obfuscate 5\% of Plato's _Laws_ with different percentages (50-90\%) of Pseudo-Plato _Lovers_. This will allow a more fine-grained comprehension of the threshold for performance metrics.
 - Remove from dataset: _Lovers_ and the chunks of authentic _Laws_ used in obfuscation.
-
-**Models compared in this study**:
-
-- Support Vector Machine (SVM)
-- Common N-Gram (CNG) (adapted from [Robert Layton](https://github.com/robertlayton/authorship_tutorials)'s tutorials)
-
-## STEP 4: SUPERVISED STUDY
+- Compare performace of a **Support Vector Machine** (SVM) Machine Learning model and a **Common N-Gram**(CNG) model.
 
 ### SVM model (`performSVM.py`)
 
@@ -46,9 +41,9 @@ Perform Support Vector Data Description (`performSVDD.py`, adapted from [Kepeng 
 - Get insights into learned features and predictions (`svmXAI.py`) with [SHAP package](https://github.com/shap/shap?tab=readme-ov-file)[[2]](#2)
 - Evaluate model by training the whole dataset and testing on Validation set
 
-### CNG-RLP model (`performUnaryCNG.py`)
+### CNG model (`performUnaryCNG.py`)
 
-- Unary classification modified from R. Layton [[3]](#3) (cfr.`RLP.py` model) using CNG method[[4]](#4)
+- Unary classification method. Script adapted from [Robert Layton](https://github.com/robertlayton/authorship_tutorials)'s tutorials [[3]](#3)(cfr.`RLP.py` model) based on the CNG method[[4]](#4).
 
 ## References
 
