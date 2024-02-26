@@ -2,29 +2,29 @@
 
 <!-- https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax -->
 
-# Data
-
-## collection
+# Data collection
 
 From [PerseusDL](https://github.com/PerseusDL/canonical-greekLit) and [OpenGreekAndLatin](https://github.com/OpenGreekAndLatin/First1KGreek).
 
 - Plato (tlg0059), 36 works we split in two corpora: Plato and pseudoPlato (including the VII Epistle);
 - Xenophon (tlg0032), 14 works.
 
-## STEP 1 : PREPROCESSING
+# Set Up
+
+## STEP 1 : Preprocessing
 
 Use `main.py` to extract data from TEI to clean TXT and obtain two datasets: **PLAIN** text and **PARSED** part-of-speech masked.
 All steps hereafter need to be performed separately for the two datasets.
 
 Use `makedfprofiles.py` to create a DataFrame. Concatenates files into chronological profiles (Plato_Early, Plato_Mature, Plato_Late) and genre profiles (Xen_Dialogues, Xen_Treatise, Xen_Histories) and chunks the six documents plus Pseudo-Platonic dialogues into 5.000 word instances. Adds binary labels that identify Plato_Late as the positive class.
 
-## STEP 2 : UNSUPERVISED STUDY
+## STEP 2 : Unsupervised Study
 
 Perform **Cluster Analysis** using the [Stylo package](https://github.com/computationalstylistics/stylo)in R (``).[[1]](#1) 
-\\
+
 Perform **Support Vector Data Description** (`performSVDD.py`, adapted from [Kepeng Qiu](https://github.com/iqiukp/SVDD-Python)'s GitHub).
 
-## STEP 3: SUPERVISED STUDY
+## STEP 3: Supervised Study
 
 - Revise files assigned to positive label based on unsupervised insights
 - Create ad-hoc testset. Use `obfuscate.py` to obfuscate 5\% of Plato's _Laws_ with different percentages (50-90\%) of Pseudo-Plato _Lovers_. This will allow a more fine-grained comprehension of the threshold for performance metrics.
@@ -45,7 +45,7 @@ Perform **Support Vector Data Description** (`performSVDD.py`, adapted from [Kep
 
 - Unary classification method. Script adapted from [Robert Layton](https://github.com/robertlayton/authorship_tutorials)'s tutorials [[3]](#3)(cfr.`RLP.py` model) based on the CNG method[[4]](#4).
 
-## References
+## REFERENCES
 
 <a id="1">[1]</a> Eder, M., Rybicki, J. and Kestemont, M. (2016). Stylometry with R: a package for computational text analysis. R Journal, 8(1): 107-21. https://journal.r-project.org/archive/2016/RJ-2016-007/index.html
 

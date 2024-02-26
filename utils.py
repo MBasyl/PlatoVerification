@@ -7,6 +7,32 @@ import random
 from collections import defaultdict
 import numpy as np
 from numpy.typing import NDArray
+import matplotlib.pyplot as plt
+
+
+def plot_mean_median(df):
+    # Filter dataframe for when true_label and prediction match
+    match_df = df[df['true_label'] == df['prediction']]
+    mismatch_df = df[df['true_label'] != df['prediction']]
+
+    # Create boxplots
+    plt.figure(figsize=(10, 6))
+
+    # Boxplot for mean cosine
+    plt.subplot(1, 2, 1)
+    plt.violinplot([match_df['cosine'], mismatch_df['cosine']],
+                   showmedians=True, showextrema=True)
+    plt.title('Cosine Distance Distribution')
+
+    # Boxplot for mean correlation
+    plt.subplot(1, 2, 2)
+    plt.violinplot([match_df['correlation'], mismatch_df['correlation']],
+                   showmedians=True, showmeans=True, showextrema=True)
+    plt.title('Cole Correlation Distribution')
+
+    plt.tight_layout()
+    plt.savefig(f"trainCNGboxplot.png")
+    plt.show()
 
 
 def minmax(x, y: NDArray[np.float64]):

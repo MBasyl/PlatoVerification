@@ -1,6 +1,5 @@
 """
-Script modified from R. Layton
-GitHub: https://github.com/robertlayton/authorship_tutorials
+Script modified from R. Layton, GitHub 
 """
 from scipy.spatial import distance
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -25,6 +24,7 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
         # Predict which of the authors wrote each of the documents
         all_distances = np.array([self.predict_distance(document)
                                   for document in documents])
+
         positive_threshold = self.threshold[1]+self.threshold[2]
 
         # Make predictions based on threshold
@@ -32,13 +32,13 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
             cosine_threshold = self.threshold[1][0]+self.threshold[2][0]
             predictions = [0 if dist[0] >
                            cosine_threshold else 1 for dist in all_distances]
-        elif measure != 'cosine':
-            minmax_threshold = self.threshold[1][1]-self.threshold[2][1]
-            predictions = [0 if dist[1] <
-                           minmax_threshold else 1 for dist in all_distances]
+        elif measure == 'cole':
+            cole_threshold = self.threshold[1][1]-self.threshold[2][1]
+            predictions = [0 if dist[1] >
+                           cole_threshold else 1 for dist in all_distances]
         else:
             raise ValueError(
-                "Invalid measure. Please provide either 'cosine' or 'minmax'.")
+                "Invalid measure. Please provide either 'cosine' or 'cole'.")
 
         # elif measure == 'cole':...
         return predictions, all_distances
@@ -53,15 +53,24 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
         # All n-grams in the top L of either profile.
         ngrams = list(self.top_L(profile1).keys()) + \
             list(self.top_L(profile1).keys())
-        # Profile vector for profile 1
-        d1 = np.array([profile1.get(ng, 0.) for ng in set(ngrams)])
-        # Profile vector for profile 2
-        d2 = np.array([profile2.get(ng, 0.) for ng in set(ngrams)])
-        cosine_dist = distance.cosine(d1, d2)
-        # choose a better distance...
-        minmax_dist = minmax(d1, d2)
-        correlation_dist = distance.correlation(d1, d2)
-        return cosine_dist, correlation_dist  # minmax_dist
+        # Profile vector for profile 1 (target)
+        t = np.array([profile1.get(ng, 0.) for ng in set(ngrams)])
+        # Profile vector for profile 2 (new instance)
+        i = np.array([profile2.get(ng, 0.) for ng in set(ngrams)])
+        # Cosine Distance
+        cosine_dist = round(distance.cosine(t, i), 4)
+        # Cole Correlation
+        # Stack vectors vertically & USE ABSOLUTE VALUES?
+        matrix = np.vstack((t, i))
+        matrix = (matrix > 0).astype(int)  # Convert to boolean
+        a = np.sum(np.logical_and(t, i))  # features present in both
+        b = np.sum(np.logical_and(t, 1 - i))  # features present only in t
+        c = np.sum(np.logical_and(1 - t, i))  # features present only in k
+        p = matrix.shape[1]  # number of features in total
+        d = p - (a + b + c)  # features absent in both
+        correlation_dist = round((a * d - b * c) / ((a + b) * (b + d)), 4)
+        # print(cosine_dist, correlation_dist)
+        return cosine_dist, correlation_dist
 
     def top_L(self, profile: dict) -> dict:
         threshold = sorted(map(abs, profile.values()))[-self.L]
