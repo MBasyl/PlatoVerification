@@ -37,16 +37,17 @@ preprocess_pipeline()
 # STEP 4: Create ad-hoc test-set
 # (obfuscate.py)
 
-# STEP 5.1: Execute SVM model
-# SearchGrid + CV ROC analysis
+# STEP 5: SVM model
+# (performSVM.py)
+# SearchGrid +  Cross-validate ROC analysis
+# Train and test SVM model
 # Evaluate on Val set
+# Get SHAP insights into model
 
-# STEP 5.2: Insights into SVM
-# use shapscr.py
-
-# STEP 6.1
-# Perform RLP
-# try colesim
-
-# STEP 6.2
-# Inspect features. i.e. start of sentences (use periods) influent?
+# STEP 6: CNG model
+# (performCNG.py)
+# Perform original multiclass (attribution) RLP (see models.RLP)
+# SearchGrid and Cross-validate one-classification CNG
+# Train and test SVM model
+# Evaluate on Val set
+# Get visual insights into model
