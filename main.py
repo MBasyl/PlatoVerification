@@ -25,20 +25,28 @@ def preprocess_pipeline(corpusfolder='processedXML'):
     return
 
 
-# STEP 1 : PREPROCESSING
+# STEP 1: PREPROCESSING
 preprocess_pipeline()
 
-# STEP 2 :
+# STEP 2:
 # Create PROFILE CONFIGURATION (makedfprofiles.py)
 
-# STEP 3 : Perform SVDD
+# STEP 3: Perform SVDD
 # (performSVDD.py)
 
-# STEP 4: TO DO
+# STEP 4: Create ad-hoc test-set
 # (obfuscate.py)
 
-# STEP 5: TO DO
-# on PLAIN: make . and ; as separate characters
-# split train/test/val!!
-# Perform SVM/RLP
-# Inspect features. i.e. start of sentences influent?
+# STEP 5.1: Execute SVM model
+# SearchGrid + CV ROC analysis
+# Evaluate on Val set
+
+# STEP 5.2: Insights into SVM
+# use shapscr.py
+
+# STEP 6.1
+# Perform RLP
+# try colesim
+
+# STEP 6.2
+# Inspect features. i.e. start of sentences (use periods) influent?

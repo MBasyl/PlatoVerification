@@ -132,7 +132,7 @@ def make_profile_dictionary(folder, max_length=4300):
         content = open(file, "r", encoding="utf-8").read()
         words = re.findall(r'\S+', content)
         author, text = file.split("/")[-1].split(".")[0].split("_")
-        chunks = utils.chunk_text(words, max_length, exact=True)
+        chunks = utils.chunk_text(words, max_length, exact=False)
         for c in chunks:
             contents.append(' '.join(c))
             text_name.append(text)
@@ -144,11 +144,12 @@ def make_profile_dictionary(folder, max_length=4300):
 
 def make_profile_dataset(dataset, output_path):
     df = pd.DataFrame(dataset)
-    # print(df.head())
+    print(len(df.title.tolist()))
     # Apply the function to count words and filter rows
     df = df[df['text'].apply(utils.count_words) >= 2000]
     # Resetting index after dropping rows
     df.reset_index(drop=True, inplace=True)
+    print(len(df.title.tolist()))
     print("\n\nAssigning positive label to Law and Late profiles")
     df['binary_label'] = df['title'].apply(
         lambda x: 1 if x in ['Law', 'Late', 'Law#test', 'Late#test'] else -1)
@@ -162,32 +163,38 @@ if __name__ == "__main__":
     # combine_profiles(input_dir)
 
     # Plato SECOND Chronological Profiles
-    folder = 'data/PLAIN'  # [PARSED/PLAIN]
-    combine_new_profiles(folder)
+    folder = 'alternativeParsed'  # [PARSED/PLAIN]
+    # combine_new_profiles(folder)
     exit(0)
     authors, text_name, contents = make_profile_dictionary(
-        folder='PLAINProfiles', max_length=4300)
+        folder='Profiles', max_length=4300)
     # Manually assign #test to 20% of titles (ca 30)
     exit(0)
     output_path = 'Plain4kNewprofile.csv'
     dataset = {
         'author': authors,
-        'title': ['Dialogues', 'Dialogues', 'Dialogues#test', 'Dialogues', 'Dialogues', 'Dialogues#test', 'Dialogues',
-                  'Dialogues', 'Dialogues', 'Dialogues', 'Dialogues#test', 'Dialogues', 'Dialogues', 'Dialogues',
-                  'Dialogues', 'Dialogues#test', 'Crt', '1Al', '1Al#test', 'Epi#test', 'Treatise', 'Treatise', 'Treatise#test',
-                  'Treatise', 'Treatise', 'Treatise#test', 'Treatise', 'Late', 'Late#test', 'Late', 'Late', 'Late#test',
-                  'Late', 'Late', 'Late', 'Late#test', 'Late', 'Late', 'Late', 'Late#test', 'Late', 'Late', 'Late',
-                  'Late#test', 'Par', 'Par#test', 'Par', 'Law', 'Law', 'Law#test', 'Law', 'Law', 'Law#test', 'Law', 'Law',
-                  'Law', 'Law', 'Law', 'Law#test', 'Law', 'Law', 'Law', 'Law', 'Law', 'Law', 'Law#test', 'Law', 'Law',
-                  'Law#test', 'Law', 'Histories', 'Histories', 'Histories#test', 'Histories', 'Histories', 'Histories#test',
-                  'Histories', 'Histories', 'Histories#test', 'Histories', 'Histories', 'Histories#test', 'Histories',
-                  'Histories', 'Histories', 'Histories#test', 'Histories', 'Histories', 'Histories', 'Histories',
-                  'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories',
-                  'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories#test', 'Histories',
-                  'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories',
-                  'Histories', 'Histories#test', 'Histories', 'Histories', 'HiM', 'Early', 'Early#test', 'Early', 'Early',
-                  'Early', 'Early', 'Early', 'Early', 'Early', 'Early', 'Early', 'Early#test', 'Early', 'Early', 'Early',
-                  'Early', 'Early', 'Early', 'Early', 'Early', 'Early', 'Early#test', 'Early', 'Early', 'Early', 'Early',
-                  'Early', 'Early', 'Early', 'Early', 'Early', 'Tim', 'Tim', 'Tim#test', 'Tim', 'Tim'],
+        'title': ['2Al', '2Al#test', 'Dialogues', 'Dialogues#test', 'Dialogues', 'Dialogues', 'Dialogues', 'Dialogues',
+                  'Dialogues', 'Dialogues#test', 'Dialogues', 'Dialogues', 'Dialogues', 'Dialogues#test', 'Dialogues',
+                  'Dialogues', 'Dialogues', 'Dialogues#test', 'Dialogues', 'Dialogues', 'Crt', 'Crt#test', 'Hip', '1Al',
+                  '1Al#test', '1Al', 'The', 'Epi#test', 'Epi', 'Treatise', 'Treatise#test', 'Treatise', 'Treatise', 'Treatise',
+                  'Treatise#test', 'Treatise', 'Treatise', 'Lov', 'Late#test', 'Late', 'Late', 'Late', 'Late#test', 'Late', 'Late',
+                  'Late', 'Late#test', 'Late', 'Late', 'Late', 'Late', 'Late', 'Late', 'Late', 'Late#test', 'Late', 'Late',
+                  'Late', 'Late', 'Late', 'Late#test', 'Late', 'Late', 'Late', 'Late', 'Late', 'Late', 'Late', 'Late',
+                  'Late', 'Late', 'Late', 'Late', 'Late', 'Late', 'Late', 'Late#test', 'Late', 'Late', 'Late', 'Late',
+                  'Late', 'Late', 'Par', 'Par#test', 'Par', 'Par', 'Min', 'VII', 'VII', 'VII', 'Law#test', 'Law', 'Law', 'Law',
+                  'Law', 'Law', 'Law#test', 'Law', 'Law', 'Law', 'Law', 'Law#test', 'Law', 'Law', 'Law', 'Law', 'Law', 'Law',
+                  'Law', 'Law', 'Law', 'Law', 'Law', 'Law#test', 'Law', 'Law', 'Histories', 'Histories#test', 'Histories',
+                  'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories',
+                  'Histories', 'Histories#test', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories',
+                  'Histories', 'Histories', 'Histories', 'Histories', 'Histories#test', 'Histories', 'Histories',
+                  'Histories', 'Histories#test', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories',
+                  'Histories', 'Histories', 'Histories', 'Histories#test', 'Histories', 'Histories', 'Histories',
+                  'Histories', 'Histories#test', 'Histories', 'Histories', 'Histories', 'Histories', 'Histories',
+                  'Histories', 'Histories', 'Histories', 'Histories', 'Histories#test', 'Histories', 'Histories',
+                  'HiM', 'HiM#test', 'HiM', 'Early', 'Early', 'Early#test', 'Early', 'Early', 'Early', 'Early', 'Early',
+                  'Early', 'Early', 'Early', 'Early', 'Early', 'Early#test', 'Early', 'Early', 'Early', 'Early', 'Early',
+                  'Early', 'Early#test', 'Early', 'Early', 'Early', 'Early', 'Early', 'Early#test', 'Early', 'Early', 'Early',
+                  'Early', 'Early#test', 'Early', 'Early', 'Early', 'Early', 'Early', 'Early', 'Early', 'Early#test', 'Early',
+                  'Early', 'Early', 'Tim', 'Tim#test', 'Tim', 'Tim', 'Tim', 'Tim'],
         'text': contents}
     make_profile_dataset(dataset, output_path)

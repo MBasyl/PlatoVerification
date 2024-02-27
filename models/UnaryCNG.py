@@ -1,5 +1,5 @@
 """
-Script modified from R. Layton, GitHub 
+Script based on R. Layton, GitHub 
 """
 from scipy.spatial import distance
 from sklearn.base import BaseEstimator, ClassifierMixin

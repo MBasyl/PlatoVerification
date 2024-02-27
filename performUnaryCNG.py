@@ -3,7 +3,7 @@ import sys
 from sklearn.model_selection import StratifiedKFold
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, classification_report, confusion_matrix
-from UnaryCNG import UnaryCNG as cng
+from models.UnaryCNG import UnaryCNG as cng
 from collections import Counter
 import matplotlib.pyplot as plt
 import seaborn as sns

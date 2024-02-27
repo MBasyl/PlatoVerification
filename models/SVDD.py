@@ -1,7 +1,9 @@
-# Author: Arman Naseri Jahfari (a.naserijahfari@tudelft.nl)
-# Original paper: Tax, D. M. J., & Duin, R. P. W. (2004).
-# # Support Vector Data Description. Machine Learning, 54(1), 45–66. https://doi.org/10.1023/B:MACH.0000008084.60811.49
-
+""" 
+Author: Arman Naseri Jahfari (a.naserijahfari@tudelft.nl)
+Original paper: Tax, D. M. J., & Duin, R. P. W. (2004).
+Support Vector Data Description. Machine Learning, 54(1), 45–66. 
+https://doi.org/10.1023/B:MACH.0000008084.60811.49
+"""
 import numpy as np
 from scipy.spatial.distance import cdist
 from scipy.linalg import cholesky, LinAlgError
@@ -12,7 +14,8 @@ from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 import pandas as pd
-import sys, os
+import sys
+import os
 
 
 class SVDDModel:
@@ -70,10 +73,12 @@ class SVDDModel:
         mod_test_names = [s.replace('#test', '') for s in test_names]
 
         p = clf._plot_contour(Xtrain, ytrain, lims=[-0.5, 1.5, -0.5, 0.5])
-        p.savefig(f'outputs/SVDD/{params}_train.png', bbox_inches='tight', pad_inches=0)
+        p.savefig(f'outputs/SVDD/{params}_train.png',
+                  bbox_inches='tight', pad_inches=0)
         d = clf._plot_contour(Xtest, ytest, document_names=mod_test_names,
                               lims=[-0.5, 1.5, -0.5, 0.5])
-        d.savefig(f'outputs/SVDD/{params}_test.png', bbox_inches='tight', pad_inches=0)
+        d.savefig(f'outputs/SVDD/{params}_test.png',
+                  bbox_inches='tight', pad_inches=0)
         print("#################")
 
 
