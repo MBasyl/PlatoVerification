@@ -2,14 +2,14 @@ import pandas as pd
 import numpy as np
 import sys
 import shap
-from collections import Counter
-from sklearn.model_selection import train_test_split, GridSearchCV, RepeatedStratifiedKFold, StratifiedKFold
-from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.model_selection import GridSearchCV, RepeatedStratifiedKFold, StratifiedKFold
+from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import TruncatedSVD
 from sklearn.svm import SVC
-from sklearn.metrics import confusion_matrix, classification_report, RocCurveDisplay, auc
+from sklearn.metrics import confusion_matrix, classification_report, f1_score
+from collections import Counter
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
@@ -29,14 +29,15 @@ class SVMModel:
                 self.df[self.df.title == 'Histories'].index, inplace=True)
 
         # Validation set
-        val_set = self.df[self.df['title'].str.contains('VII|\.')]
-        X_val, y_val = val_set['text'], val_set['label']
+        val_set = self.df[self.df['title'].str.contains('VII|val')]
+        X_val, y_val, val_titles = val_set['text'], val_set['label'], val_set['title'].to_list(
+        )
 
         # Train-test split, keeping class imbalance
-        self.df = self.df[~self.df['title'].str.contains('VII|\.')]
+        self.df = self.df[~self.df['title'].str.contains('VII|val')]
         X, y = self.df['text'], self.df['label']
 
-        return X_val, y_val, X, y
+        return X_val, y_val, val_titles, X, y
 
     def perform_SearchGrid(self, X, y, feature: str, save_path: str):
         """
@@ -50,7 +51,7 @@ class SVMModel:
         param_grid = {
             "vect__max_df": [1, 0.4, 0.8],
             # "vect__min_df": [1, 5],
-            "vect__ngram_range": [(4, 4), (4, 5), (5, 6), (3, 6)],
+            "vect__ngram_range": [(3, 3), (4, 4), (5, 5), (5, 6), (4, 6)],
             # "vect__max_features": [1000, 3000],
             "clf__kernel": ["linear"]  # , "rbf"],
             # Not influent: "clf__class_weight": [None, 'balanced']
@@ -60,7 +61,7 @@ class SVMModel:
                                       analyzer=feature, token_pattern=r"(?u)\b\w+(?:[-:]\w+)?(?:[-:]\w+)?\b")),
              ("clf", SVC(C=100, random_state=0))
              ])
-        cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=0)
+        cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=0)
         search = GridSearchCV(estimator=pipeline, param_grid=param_grid,
                               scoring="f1", cv=cv, verbose=2, n_jobs=-1)
         search.fit(X, y)
@@ -96,105 +97,56 @@ class SVMModel:
         fig.savefig(f"{save_path}.png", dpi=300, bbox_inches='tight')
         plt.show()
 
-    def perform_crossval(self, X, y, save_path: str, feature, ngrams, max_features, max_cull):
-
+    def perform_crossval(self, X, y, feature, ngrams, max_features, max_cull):
         tfidf = TfidfVectorizer(strip_accents=None, lowercase=False,
                                 analyzer=feature,
-                                ngram_range=ngrams, token_pattern=r"(?u)\b\w+(?:[-:]\w+)?(?:[-:]\w+)?\b",
+                                ngram_range=ngrams,
                                 max_features=max_features, max_df=max_cull)
         scaler = StandardScaler(with_mean=False)
 
         X_train_tfidf = tfidf.fit_transform(X)
-
         X = scaler.fit_transform(X_train_tfidf)
-        # n_samples, n_features = X.shape
 
         model = SVC(kernel='linear', C=100, probability=True, random_state=54)
 
-        # Train the model
-        classifier = model.fit(X, y)
+        # Perform cross-validation
         cv = StratifiedKFold(n_splits=5)
+        f1_scores = []
 
-        tprs = []
-        aucs = []
-        mean_fpr = np.linspace(0, 1, 100)
-
-        fig, ax = plt.subplots(figsize=(6, 6))
         for fold, (train, test) in enumerate(cv.split(X, y)):
-            # Convert sparse matrices to arrays
             X_train_fold = X[train].toarray()
-            y_train_fold = y.iloc[train]  # Access labels using iloc
+            y_train_fold = y.iloc[train]
             X_test_fold = X[test].toarray()
-            y_test_fold = y.iloc[test]  # Access labels using iloc
-            print("\nTRAIN/TEST balance: ", Counter(y_train_fold),
-                  "\t", Counter(y_test_fold))
+            y_test_fold = y.iloc[test]
 
-            # Fit the model on training fold
-            classifier.fit(X_train_fold, y_train_fold)
+            classifier = model.fit(X_train_fold, y_train_fold)
+            y_pred = classifier.predict(X_test_fold)
+            f1 = f1_score(y_test_fold, y_pred)  # Compute F1 score
+            f1_scores.append(f1)
 
-            # classifier.fit(X[train], y[train])
-            viz = RocCurveDisplay.from_estimator(
-                classifier,
-                X_train_fold,
-                y_train_fold,
-                name=f"ROC fold {fold}",
-                alpha=0.3,
-                lw=1,
-                ax=ax,
-                plot_chance_level=True,  # (fold == 5 - 1)
-            )
-            interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
-            interp_tpr[0] = 0.0
-            tprs.append(interp_tpr)
-            aucs.append(viz.roc_auc)
+            print(f"Fold {fold + 1} F1 score: {f1}")
 
-        mean_tpr = np.mean(tprs, axis=0)
-        mean_tpr[-1] = 1.0
-        mean_auc = auc(mean_fpr, mean_tpr)
-        std_auc = np.std(aucs)
-        ax.plot(
-            mean_fpr,
-            mean_tpr,
-            color="b",
-            label=r"Mean ROC (AUC = %0.2f $\pm$ %0.2f)" % (mean_auc, std_auc),
-            lw=2,
-            alpha=0.8,
-        )
+        mean_f1 = np.mean(f1_scores)
+        std_f1 = np.std(f1_scores)
+        print(f"Mean F1 score: {mean_f1}, Std F1 score: {std_f1}")
 
-        std_tpr = np.std(tprs, axis=0)
-        tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
-        tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
-        ax.fill_between(
-            mean_fpr,
-            tprs_lower,
-            tprs_upper,
-            color="grey",
-            alpha=0.2,
-            label=r"$\pm$ 1 std. dev.",
-        )
-
-        ax.set(
-            xlabel="False Positive Rate",
-            ylabel="True Positive Rate",
-            title=f"Mean ROC curve with variability\n(Positive label 'Plato')",
-        )
-        ax.legend(loc="lower right")
-        fig.savefig(f"{save_path}.png", dpi=300, bbox_inches='tight')
-        plt.show()
-
-    def execute_model(self, feature, ngrams, max_features, max_cull):
+    def execute_model(self, feature, ngrams, max_features, max_cull, validation=False):
         # Train-test split, keeping class imbalance
         traindata = self.df[~self.df['title'].str.contains('test')]
         X_train, y_train = traindata['text'], traindata['label']
         # X_train, X_test, y_train, y_test = train_test_split(
         #     X, y, test_size=0.2, random_state=3, stratify=y)
+        if validation:
+            X_train, y_train = self.df['text'], self.df['label']
+            print(y_train.shape, Counter(y_train))
+
         pipe = Pipeline(
             [("vect", TfidfVectorizer(strip_accents=None, lowercase=False,
                                       analyzer=feature,
                                       ngram_range=ngrams,
                                       max_features=max_features,
-                                      max_df=max_cull,
-                                      token_pattern=r"(?u)\b\w+(?:[-:]\w+)?(?:[-:]\w+)?\b")),
+                                      max_df=max_cull)),
+             # token_pattern=r"(?u)\b\w+(?:[-:]\w+)?(?:[-:]\w+)?\b")),
              ("scalar", StandardScaler(with_mean=False)),
              ("clf", SVC(C=100, kernel='linear'))
              ])
@@ -206,9 +158,14 @@ class SVMModel:
 
         return model, X_train, y_train, feature_names
 
-    def get_predictions(self, model):
+    def get_predictions(self, model, X_val=None, y_val=None, val_titles=None, validation=False):
         testdata = self.df[self.df['title'].str.contains('test')]
         X_test, y_test = testdata['text'], testdata['label']
+        doc_titles = testdata['title'].to_list()
+
+        if validation:
+            X_test, y_test, doc_titles = X_val, y_val, val_titles
+            print(y_test.shape, doc_titles)
 
         # Make y_pred on the test set
         y_pred = model.predict(X_test)
@@ -221,14 +178,13 @@ class SVMModel:
         print("Classification Report:\n", classification_report(y_test, y_pred))
 
         # Print ground truth and predicted authors for misclassified documents
-        doc_titles = testdata['title'].to_list()
         y_test.reset_index(drop=True, inplace=True)
         for idx, label in enumerate(y_pred):
             status = "Misclassified" if label != y_test[idx] else "Correct"
             print(
                 f"{status} - Predicted {label} with certainty {round(probabilities[idx], 2)} for document: {doc_titles[idx]}")
 
-        return X_test, y_test, y_pred, doc_titles
+        return X_test, y_test, y_pred, probabilities, doc_titles
 
     @staticmethod
     def reduce_dimentionality(X, y, feature, ngrams, max_features, max_cull):
@@ -333,6 +289,41 @@ class SVMxai(SVMModel):
         self.n = n
         self.data_type = data_type
 
+    def validation_predictions(self, cls, X_test, y_test):
+        y_pred = cls.predict(X_test)
+        print("Classification Report:\n", classification_report(y_test, y_pred))
+
+    def get_validation_xp(self, X_train, y_train, X_test, y_test, feature, ngrams, max_features, max_cull):
+
+        tfidf = TfidfVectorizer(strip_accents=None, lowercase=False,
+                                analyzer=feature,
+                                ngram_range=ngrams,
+                                max_features=max_features, max_df=max_cull)
+        scaler = StandardScaler(with_mean=False)
+        model = SVC(kernel='linear', C=100,
+                    probability=True, random_state=54)
+
+        X_train_tfidf = tfidf.fit_transform(X_train).toarray()
+        X_train = scaler.fit_transform(X_train_tfidf)
+
+        X_test_tfidf = tfidf.transform(X_test).toarray()
+        X_test = scaler.fit_transform(X_test_tfidf)
+        feature_names = tfidf.get_feature_names_out()
+        cls = model.fit(X_train, y_train)
+
+        self.validation_predictions(cls, X_test, y_test)
+
+        shap_values, values = self.compute_shap_values(
+            cls, X_train, X_test, feature_names)
+
+        # Plots
+        self.individual_predictions(
+            doc_instance=shap_values[0], title="Prediction for VII Letter", data_type=self.data_type)
+        # Absolute mean SHAP: see the features that significantly affect model predictions
+        self.summary_plot(shap_values, feature_names, self.n, self.data_type)
+        self.plot_feature_importance(
+            values, feature_names, self.n, self.data_type)
+
     def get_explanations(self, feature, ngrams, max_features, max_cull):
         # Train data
         traindata = self.df[~self.df['title'].str.contains('#|VII')]
@@ -372,6 +363,7 @@ class SVMxai(SVMModel):
 
     def evaluate_predictions(self, df, cls, X_test, y_test):
         y_pred = cls.predict(X_test)
+        print("Classification Report:\n", classification_report(y_test, y_pred))
 
         correct_pos = []
         correct_neg = []
@@ -432,19 +424,20 @@ class SVMxai(SVMModel):
         # Plot feature importance
         fig, ax = plt.subplots(figsize=(15, 12))
         top_features = feature_importance.head(n)
-
         hbars = ax.barh(top_features.index, top_features.importance,
                         align='center')
-        # ax.invert_yaxis()  # labels read top-to-bottom
-        ax.set_xlabel('Importance', fontsize=15)
+        # Set font size for x and y ticks
+        ax.tick_params(axis='both', which='major', labelsize=20)
+        ax.invert_yaxis()  # labels read top-to-bottom
+        ax.set_xlabel('Importance', fontsize=20)
         ax.set_title("Feature Importance", loc='center',
-                     fontsize=20, weight='bold')
+                     fontsize=40, weight='bold')
         # Label with specially formatted floats
-        ax.bar_label(hbars, fmt='%.3f', fontsize=9)
+        ax.bar_label(hbars, fmt='%.3f', fontsize=15)
         ax.set_xlim(right=0.03)  # adjust xlim to fit labels
-
-        fig.savefig(f"{data_type}_feature_importance.png",
-                    dpi=300)  # bbox_inches="tight",
+        print(top_features.index)
+        fig.savefig(f"SVM{data_type}ValFeatures.png",
+                    dpi=300, bbox_inches="tight")
         plt.close()
 
     @staticmethod
@@ -455,9 +448,9 @@ class SVMxai(SVMModel):
         Arrows: amount of that feature increasing/decreasing the prediction compared to the avg
         """
         plt.figure(figsize=(15, 10))
-        shap.plots.waterfall(doc_instance, show=False)
+        shap.plots.waterfall(doc_instance, max_display=21, show=False)
         plt.title(title,
-                  loc='right', fontsize=20, weight='bold')
+                  loc='left', fontsize=20, weight='bold')
         plt.tight_layout()
 
         # Save the figure

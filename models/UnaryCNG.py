@@ -25,22 +25,21 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
         all_distances = np.array([self.predict_distance(document)
                                   for document in documents])
 
-        positive_threshold = self.threshold[1]+self.threshold[2]
-
         # Make predictions based on threshold
         if measure == 'cosine':
-            cosine_threshold = self.threshold[1][0]+self.threshold[2][0]
+            cosine_threshold = self.threshold[0][0]+self.threshold[1][0]
+            print("Fitted cosine threshold: ", cosine_threshold)
             predictions = [0 if dist[0] >
                            cosine_threshold else 1 for dist in all_distances]
         elif measure == 'cole':
-            cole_threshold = self.threshold[1][1]-self.threshold[2][1]
+            cole_threshold = self.threshold[0][1]-self.threshold[1][1]
             predictions = [0 if dist[1] >
                            cole_threshold else 1 for dist in all_distances]
+        # elif measure == 'minmax':...
         else:
             raise ValueError(
                 "Invalid measure. Please provide either 'cosine' or 'cole'.")
 
-        # elif measure == 'cole':...
         return predictions, all_distances
 
     def predict_distance(self, document):
@@ -60,17 +59,21 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
         # Cosine Distance
         cosine_dist = round(distance.cosine(t, i), 4)
         # Cole Correlation
-        # Stack vectors vertically & USE ABSOLUTE VALUES?
+        # Stack vectors vertically
         matrix = np.vstack((t, i))
         matrix = (matrix > 0).astype(int)  # Convert to boolean
         a = np.sum(np.logical_and(t, i))  # features present in both
-        b = np.sum(np.logical_and(t, 1 - i))  # features present only in t
-        c = np.sum(np.logical_and(1 - t, i))  # features present only in k
+        # features present only in t(arget)
+        b = np.sum(np.logical_and(t, 1 - i))
+        # features present only in i(current document)
+        c = np.sum(np.logical_and(1 - t, i))
         p = matrix.shape[1]  # number of features in total
         d = p - (a + b + c)  # features absent in both
         correlation_dist = round((a * d - b * c) / ((a + b) * (b + d)), 4)
+        # MinMax Distance
+        # minmax = utils.minmax(d1, d2)
         # print(cosine_dist, correlation_dist)
-        return cosine_dist, correlation_dist
+        return cosine_dist, correlation_dist  # absolute values?
 
     def top_L(self, profile: dict) -> dict:
         threshold = sorted(map(abs, profile.values()))[-self.L]
@@ -83,14 +86,6 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
     def fit(self, documents, classes):
         # Create baseline dataset language profile
         self.language_profile = self.create_profile(documents)
-
-        # Profile each document independently: NEED THIS??
-        # single_documents = []
-        # for i in range(len(documents)):
-        #     print(classes[i], documents[i])
-        #     single_documents.append((classes[i], documents[i]))
-        # self.document_profiles = {author: self.create_profile(cur_doc)
-        #                           for author, cur_doc in single_documents}
 
         # Create a uniform PLATO (target) profile
         target_documents = [doc for doc, label in zip(
@@ -108,8 +103,8 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
             threshold = self.compare_profiles(
                 target_small_profile, self.create_profile(curr_doc))
             thresholds.append(threshold)
-        self.threshold = (np.median(thresholds, axis=0), np.mean(
-            thresholds, axis=0), np.std(thresholds, axis=0))
+        self.threshold = (np.mean(thresholds, axis=0),
+                          np.std(thresholds, axis=0))
         return self.threshold
 
     def create_profile(self, documents):
@@ -165,14 +160,17 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
         feature_importance = self.compute_feature_importance()
         # Display the top N features
         top_features = feature_importance.head(top_n)
-
+        print(top_features['Feature'].tolist())
         # Create a bar plot
         plt.figure(figsize=(15, 12))
-        plt.barh(top_features['Feature'],
-                 top_features['Coefficient'], color='skyblue', align='center')
-        plt.xlabel('Feature Importance')  # xticks rotation=90
-        plt.title(title, weight='bold')
-        plt.savefig(filename, bbox_inches='tight')
-
+        hbars = plt.barh(top_features['Feature'],
+                         top_features['Coefficient'], color='skyblue', align='center')
+        plt.xlabel('Feature Importance', fontsize=20)
+        plt.tick_params(axis='both', which='major', labelsize=20)
+        plt.bar_label(hbars, fmt='%.4f', fontsize=15)
+        plt.title(title, loc='center', fontsize=40, weight='bold')
+        plt.xlim(right=0.015)  # Set the limit for x-axis
+        plt.gca().invert_yaxis()  # Invert y-axis
         plt.tight_layout()
+        plt.savefig(filename, bbox_inches='tight', dpi=300, )
         plt.show()
