@@ -20,13 +20,13 @@ Use `makedfprofiles.py` to create a DataFrame. Concatenates files into chronolog
 
 ## STEP 2 : Unsupervised Study
 
-Perform **Cluster Analysis** using the [Stylo package](https://github.com/computationalstylistics/stylo)in R (``).[[1]](#1) 
+Perform **Cluster Analysis** using the [Stylo package](https://github.com/computationalstylistics/stylo)in R (`PlatoUnsupervisedCA`).[[1]](#1) . Takes single TXT files as input
 
-Perform **Support Vector Data Description** (`performSVDD.py`, adapted from [Kepeng Qiu](https://github.com/iqiukp/SVDD-Python)'s GitHub).
+Perform **Support Vector Data Description** (`performSVDD.py`, adapted from [Kepeng Qiu](https://github.com/iqiukp/SVDD-Python)'s GitHub). Make pandas.DataFrame from TXT files and use CSV as input.
 
 ## STEP 3: Supervised Study
 
-- Revise files assigned to positive label based on unsupervised insights
+- Revise positive labels of pandas.DataFrame based on unsupervised insights.
 - Create ad-hoc testset. Use `obfuscate.py` to obfuscate 5\% of Plato's _Laws_ with different percentages (50-90\%) of Pseudo-Plato _Lovers_. This will allow a more fine-grained comprehension of the threshold for performance metrics.
 - Remove from dataset: _Lovers_ and the chunks of authentic _Laws_ used in obfuscation.
 - Compare performace of a **Support Vector Machine** (SVM) Machine Learning model and a **Common N-Gram**(CNG) model.

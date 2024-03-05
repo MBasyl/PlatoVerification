@@ -3,15 +3,15 @@
 *Test*.py
 *try*.py
 old*
-*.txt
-*.csv
+#*.txt
+#*.csv
 *.json
 *.png
 .DS_Store
 svmenv
 test*
 outputs
-data
+
 
 
 # Byte-compiled / optimized / DLL files
