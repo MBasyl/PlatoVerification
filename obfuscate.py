@@ -38,7 +38,7 @@ def make_validation_set(folder: str) -> pd.DataFrame:
         'title': text_name,
         'text': contents}
     df = pd.DataFrame(dataset)
-    df = insert_data(df, f"configure{data_type}/Disputed_VII.txt")
+    # df = insert_data(df, f"configure{data_type}/Disputed_VII.txt")
 
     return df
 
@@ -68,10 +68,10 @@ def obfuscate(folder, p):
     for filename in os.listdir(folder):
         author = filename.split("_")[0]
         title = filename.split("_")[1].split(".")[0]
-        if author == 'Pla' and title in ['Law3', 'Law7', 'Law10', 'Law15', 'Law20']:
+        if author == 'Pla' and title in ['Law3#val', 'Law7#val', 'Law10#val', 'Law15#val', 'Law20#val']:
             file = open(os.path.join(folder, filename),
                         "r", encoding="utf-8")
-            sentences = file.read().split(" _ ")
+            sentences = file.read().split(". ")
             print(filename, "number of sentences:", len(sentences))
             num_to_remove = round(p * len(sentences))
 
@@ -81,9 +81,9 @@ def obfuscate(folder, p):
 
             # Inject random sentences
             curr_percentage = str(p).split(".")[-1]
-            new_filename = f'PsPla_{title}#val{curr_percentage}.txt'
-            with open("configurePARSED/PsPla_Lov.txt", "r", encoding="utf-8") as lovers_file:
-                lovers_sentences = lovers_file.read().split(" _ ")
+            new_filename = f'PsPla_{title}#{curr_percentage}.txt'
+            with open(f"configure{data_type}/PsPla_2Al.txt", "r", encoding="utf-8") as lovers_file:
+                lovers_sentences = lovers_file.read().split(". ")
                 try:
                     for _ in range(num_to_remove):
                         random_sentence = random.choice(lovers_sentences)
@@ -96,7 +96,7 @@ def obfuscate(folder, p):
             random.shuffle(sentences)
 
             with open(os.path.join(folder, new_filename), "w", encoding="utf-8") as output_file:
-                output_file.write(" _ ".join(sentences))
+                output_file.write(". ".join(sentences))
                 output_file.close()
 
 
@@ -109,20 +109,20 @@ if __name__ == "__main__":
     # Split Laws into 21 chunks
     # laws_file = open(
     #     f"configure{data_type}/Pla_Law.txt", "r", encoding='utf-8').read()
-    # split_Laws(laws_file, data_type, chunk_size=5000)
+    # split_Laws(laws_file, data_type, chunk_size=4500)
     # exit(0)
 
     # Obfuscate 1 Law with different percentage of a Pseudo-Plato
-    # PsPla_Lov chosen has consistently most distant from Laws in previous tests
-    percentage = [0.9, 0.8, 0.7, 0.5]
-    for p in percentage:
-        obfuscate(folder=f'configure{data_type}', p=p)
+    # PsPla_2Al chosen has consistently most distant from Laws in previous tests
+    # percentage = [0.9, 0.8, 0.7, 0.5, 0.4, 0.3, 0.2]
+    # for p in percentage:
+    #     obfuscate(folder=f'configure{data_type}', p=p)
 
     # PLACE PsPla_Lov and DELETE full Laws
     df = make_validation_set(data_type)
     for file in glob.glob(f"configure{data_type}/*.txt"):
         df = insert_data(df, file)
     df['label'] = df['author'].apply(
-        lambda x: 1 if x in ['Disputed', 'Plato'] else 0)
+        lambda x: 1 if x in ['Disputed', 'Pla'] else 0)
 
-    df.to_csv(f"{data_type}dataset_validation.csv", index=False)
+    df.to_csv(f"{data_type}_validation.csv", index=False)

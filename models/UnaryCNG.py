@@ -20,6 +20,43 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
         self.threshold = None
 
     def predict(self, documents, measure='cosine'):
+        if len(documents) == 1:
+            print("Only one document in test set, proceed to compare the two profiles")
+            disputed_document = self.create_profile(
+                [document for document in documents])
+            target_profile = self.target_profile
+            feature_importance = {}
+            for ngram in target_profile:
+                feature_importance[ngram] = disputed_document[ngram] - \
+                    target_profile.get(ngram, 0)
+            # Sort feature importance dictionary by values (importance scores)
+            feature_df = pd.DataFrame(
+                {'Coefficient': feature_importance.values(), 'Feature': feature_importance.keys()})
+            feature_df = feature_df.reindex(
+                feature_df['Coefficient'].abs().sort_values(ascending=False).index)
+            top_features = feature_df.head(15)
+            print("Top Features between Plato and VII",
+                  top_features['Feature'].tolist())
+            # Create a bar plot
+            plt.figure(figsize=(15, 12))
+            bar_colors = np.where(
+                feature_df['Coefficient'] >= 0, 'lightblue', 'salmon')
+            hbars = plt.barh(top_features['Feature'],
+                             top_features['Coefficient'], color=bar_colors, align='center')
+            # Add zero line
+            plt.axvline(x=0, color='gray', linestyle='--', linewidth=0.8)
+
+            plt.xlabel('Feature Importance', fontsize=20)
+            plt.tick_params(axis='both', which='major', labelsize=20)
+            plt.bar_label(hbars, fmt='%.4f', fontsize=15)
+            plt.title('Feature Importance between Plato and VII',
+                      loc='center', fontsize=20)
+            plt.xlim(left=-0.005, right=0.005)
+            plt.gca().invert_yaxis()
+            plt.tight_layout()
+            plt.savefig('FeatImportanceOnlyVII.png',
+                        bbox_inches='tight', dpi=300, )
+            exit(0)
         # assert measure in ['cosine', 'minmax', 'cole']
         # Predict which of the authors wrote each of the documents
         all_distances = np.array([self.predict_distance(document)
@@ -168,9 +205,9 @@ class UnaryCNG(BaseEstimator, ClassifierMixin):
         plt.xlabel('Feature Importance', fontsize=20)
         plt.tick_params(axis='both', which='major', labelsize=20)
         plt.bar_label(hbars, fmt='%.4f', fontsize=15)
-        plt.title(title, loc='center', fontsize=40, weight='bold')
+        plt.title(title, loc='center', fontsize=20)
         plt.xlim(right=0.015)  # Set the limit for x-axis
         plt.gca().invert_yaxis()  # Invert y-axis
         plt.tight_layout()
         plt.savefig(filename, bbox_inches='tight', dpi=300, )
-        plt.show()
+        # plt.show()

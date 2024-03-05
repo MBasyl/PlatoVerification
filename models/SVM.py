@@ -49,7 +49,7 @@ class SVMModel:
         print("\nPerforming GridSearch, might take a while...\n")
         # use two underscores between estimator name and its parameters
         param_grid = {
-            "vect__max_df": [1, 0.4, 0.8],
+            "vect__max_df": [0.4, 0.8],
             # "vect__min_df": [1, 5],
             "vect__ngram_range": [(3, 3), (4, 4), (5, 5), (5, 6), (4, 6)],
             # "vect__max_features": [1000, 3000],
@@ -63,7 +63,7 @@ class SVMModel:
              ])
         cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=0)
         search = GridSearchCV(estimator=pipeline, param_grid=param_grid,
-                              scoring="f1", cv=cv, verbose=2, n_jobs=-1)
+                              scoring="f1", cv=cv, verbose=2, n_jobs=2)
         search.fit(X, y)
         results_df = pd.DataFrame(search.cv_results_)
         results_df = results_df.sort_values(by=["rank_test_score"])
@@ -148,7 +148,7 @@ class SVMModel:
                                       max_df=max_cull)),
              # token_pattern=r"(?u)\b\w+(?:[-:]\w+)?(?:[-:]\w+)?\b")),
              ("scalar", StandardScaler(with_mean=False)),
-             ("clf", SVC(C=100, kernel='linear'))
+             ("clf", SVC(C=100, kernel='linear', random_state=3))
              ])
 
         # Train the model
@@ -195,7 +195,7 @@ class SVMModel:
                                 max_df=max_cull)
         scaler = StandardScaler(with_mean=False)
         svd = TruncatedSVD(n_components=2)
-        model = SVC(kernel='linear', C=100)
+        model = SVC(kernel='linear', C=100, random_state=3)
         # Train data
         X_tfidf = tfidf.fit_transform(X)
         X = scaler.fit_transform(X_tfidf)
@@ -249,6 +249,7 @@ class SVMModel:
 
         model, _, X_train, y_train = self.reduce_dimentionality(
             X, y, **params)
+        document_names = [s.replace('#test', '') for s in document_names]
 
         # Plot the data points
         plt.scatter(X_train[:, 0], X_train[:, 1], c=list(y_train),
@@ -301,7 +302,7 @@ class SVMxai(SVMModel):
                                 max_features=max_features, max_df=max_cull)
         scaler = StandardScaler(with_mean=False)
         model = SVC(kernel='linear', C=100,
-                    probability=True, random_state=54)
+                    probability=True, random_state=3)
 
         X_train_tfidf = tfidf.fit_transform(X_train).toarray()
         X_train = scaler.fit_transform(X_train_tfidf)
@@ -318,7 +319,7 @@ class SVMxai(SVMModel):
 
         # Plots
         self.individual_predictions(
-            doc_instance=shap_values[0], title="Prediction for VII Letter", data_type=self.data_type)
+            doc_instance=shap_values[-1], title="Prediction for VII Letter", data_type=self.data_type)
         # Absolute mean SHAP: see the features that significantly affect model predictions
         self.summary_plot(shap_values, feature_names, self.n, self.data_type)
         self.plot_feature_importance(
@@ -338,7 +339,7 @@ class SVMxai(SVMModel):
                                 max_features=max_features, max_df=max_cull)
         scaler = StandardScaler(with_mean=False)
         model = SVC(kernel='linear', C=100,
-                    probability=True, random_state=54)
+                    probability=True, random_state=3)
 
         X_train_tfidf = tfidf.fit_transform(X_train).toarray()
         X_train = scaler.fit_transform(X_train_tfidf)
@@ -355,7 +356,10 @@ class SVMxai(SVMModel):
 
         # Plots
         self.individual_predictions(
-            doc_instance=shap_values[21], title="False Positive prediction for Pseudo Epinomis", data_type=self.data_type)
+            doc_instance=shap_values[5], title="False Positive prediction for Pseudo-Epinomis", data_type=self.data_type)
+        self.individual_predictions(
+            doc_instance=shap_values[24], title="True Positive prediction for Law14", data_type=self.data_type)
+
         # Absolute mean SHAP: see the features that significantly affect model predictions
         self.summary_plot(shap_values, feature_names, self.n, self.data_type)
         self.plot_feature_importance(
@@ -381,8 +385,8 @@ class SVMxai(SVMModel):
             elif pred != df.label.loc[idx] and df.label.loc[idx] == 1:
                 missed_pos.append(idx)
             i += 1
-        # print(y_pred.tolist())
-        # print(pred_index)
+        print("Y PRED 1-1 LIST", y_pred.tolist())
+        print(pred_index)
 
     def compute_shap_values(self, cls, X_train, X_test, feature_names):
         # Standard SHAP values
@@ -454,6 +458,6 @@ class SVMxai(SVMModel):
         plt.tight_layout()
 
         # Save the figure
-        plt.savefig(f'{data_type}_waterfall.png',
+        plt.savefig(f'{data_type}_waterfall {title}.png',
                     bbox_inches='tight', dpi=300)
         plt.close()
