@@ -1,5 +1,4 @@
-# Unsupervised Analysis
-# Matilde Basilicati
+# Unsupervised Analysis using STYLO (see References)
 
 ### 
 # SET UP
